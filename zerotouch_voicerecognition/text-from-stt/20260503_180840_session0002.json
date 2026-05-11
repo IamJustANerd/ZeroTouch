@@ -1,0 +1,10 @@
+{
+  "timestamp": "2026-05-03T18:08:40.801879",
+  "session_id": 2,
+  "wake_word": "hey jarvis",
+  "wake_word_confidence": 0.9773,
+  "transcription": "",
+  "language": "id",
+  "stt_model": "small",
+  "duration_seconds": 3.55
+}

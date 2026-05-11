@@ -1,0 +1,10 @@
+{
+  "timestamp": "2026-04-20T10:55:29.232447",
+  "session_id": 2,
+  "wake_word": "hey jarvis",
+  "wake_word_confidence": 0.8762,
+  "transcription": "Tolong bantu saya mencari informasi mengenai seseorang. Seseorang ini cukup terkenal namun berbahaya. Tolong bantu saya dan pastikan berikan informasi yang jelas dan detail sehingga tidak menimbulkan korban selanjutnya.",
+  "language": "id",
+  "stt_model": "small",
+  "duration_seconds": 21.28
+}

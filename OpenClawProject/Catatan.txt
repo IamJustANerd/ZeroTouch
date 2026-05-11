@@ -1,0 +1,6 @@
+Harga pasar saham hari ini:
+
+• Saham A: Rp 10.000
+
+• Saham B: Rp 12.000
+

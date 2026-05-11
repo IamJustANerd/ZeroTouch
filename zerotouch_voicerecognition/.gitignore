@@ -1,0 +1,5 @@
+venv/
+help.txt
+stt-audio/
+check_venv.py
+.antigravity/

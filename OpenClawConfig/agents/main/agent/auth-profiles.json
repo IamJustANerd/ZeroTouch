@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "profiles": {
+    "ollama:default": {
+      "type": "api_key",
+      "provider": "ollama",
+      "key": "ollama-local"
+    },
+    "protel:default": {
+      "type": "api_key",
+      "provider": "protel",
+      "key": "dummy_key"
+    }
+  },
+  "lastGood": {
+    "protel": "protel:default"
+  },
+  "usageStats": {
+    "protel:default": {
+      "errorCount": 0,
+      "lastUsed": 1778480043626
+    }
+  }
+}

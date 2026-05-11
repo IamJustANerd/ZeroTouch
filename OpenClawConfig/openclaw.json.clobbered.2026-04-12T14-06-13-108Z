@@ -1,0 +1,28 @@
+{
+    "gateway": {
+        "mode": "local",
+        "bind": "lan",
+        "port": 18789,
+        "controlUi": {
+            "enabled": true,
+            "allowInsecureAuth": true
+        },
+        "auth": {
+            "mode": "token",
+            "token": "1542658497515794168875165986594"
+        },
+        "trustedProxies": [
+            "192.168.65.0/24",
+            "172.17.0.0/16"
+        ]
+    },
+    "providers": {
+        "ollama": {
+            "type": "ollama",
+            "endpoint": "http://host.docker.internal:11434",
+            "models": [
+                "llama32"
+            ]
+        }
+    }
+}

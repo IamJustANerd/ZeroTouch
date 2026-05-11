@@ -1,0 +1,10 @@
+{
+  "timestamp": "2026-04-20T10:52:07.502752",
+  "session_id": 1,
+  "wake_word": "hey jarvis",
+  "wake_word_confidence": 0.7879,
+  "transcription": "Apa yang sedang melakukan saat ini? Apakah saat ini sedang proyek telematika dan apa saja yang sedang kamu lakukan? Tolong bantu saya memberikan transkripsi yang jelas dan dapat diketahui dengan baik.",
+  "language": "id",
+  "stt_model": "small",
+  "duration_seconds": 21.76
+}

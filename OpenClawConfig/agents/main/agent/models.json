@@ -1,0 +1,86 @@
+{
+  "providers": {
+    "ollama": {
+      "baseUrl": "http://10.4.143.155:11434",
+      "apiKey": "OLLAMA_API_KEY",
+      "api": "ollama",
+      "models": [
+        {
+          "id": "glm-4.7-flash",
+          "name": "glm-4.7-flash",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 8192,
+          "maxTokens": 8192,
+          "api": "ollama"
+        },
+        {
+          "id": "llama3.1",
+          "name": "llama3.1",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 131072,
+          "maxTokens": 8192,
+          "api": "ollama"
+        },
+        {
+          "id": "llama3.2:latest",
+          "name": "llama3.2:latest",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 131072,
+          "maxTokens": 8192,
+          "api": "ollama"
+        }
+      ]
+    },
+    "protel": {
+      "baseUrl": "http://protel-proxy:11435/v1",
+      "apiKey": "dummy_key",
+      "api": "openai-completions",
+      "models": [
+        {
+          "id": "protel",
+          "name": "Protel Custom API",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 32000,
+          "maxTokens": 8192,
+          "api": "openai-completions"
+        }
+      ]
+    }
+  }
+}

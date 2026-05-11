@@ -1,0 +1,12 @@
+{
+  "name": "protel-proxy",
+  "version": "1.0.0",
+  "description": "Proxy for Protel API to make it OpenAI compatible",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

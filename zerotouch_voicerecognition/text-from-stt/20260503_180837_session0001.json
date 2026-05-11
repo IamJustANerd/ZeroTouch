@@ -1,0 +1,10 @@
+{
+  "timestamp": "2026-05-03T18:08:37.206168",
+  "session_id": 1,
+  "wake_word": "hey jarvis",
+  "wake_word_confidence": 0.9849,
+  "transcription": "Halo, apa yang sedang kamu lakukan? Tolong berikan saya beberapa output mengenai perang dunia yang sedang terjadi sekarang antara Amerika dan Iran. Lalu apa kelanjutannya dari perang ini apakah ada yang menang atau sudah ada yang kalah atau bagaimana kelanjutannya dan bagaimana itu mempengaruhi beberapa aset yang ada di dunia ini. Terima kasih.",
+  "language": "id",
+  "stt_model": "small",
+  "duration_seconds": 37.12
+}
