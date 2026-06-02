@@ -21,26 +21,28 @@
     "defaults": {
       "workspace": "/home/node/.openclaw/workspace",
       "models": {
-        "ollama/llama3.1": {}
+        "ollama/llama3.1": {},
+        "protel/protel": {},
+        "google/gemini-1.5-flash": {}
       },
       "model": {
-        "primary": "ollama/llama3.1",
-        "fallbacks": []
+        "primary": "google/gemini-1.5-flash",
+        "fallbacks": ["protel/protel"]
       }
     },
     "list": [
       {
         "id": "main",
         "model": {
-          "primary": "ollama/llama3.1",
-          "fallbacks": []
+          "primary": "google/gemini-1.5-flash",
+          "fallbacks": ["protel/protel"]
         }
       }
     ]
   },
   "meta": {
     "lastTouchedVersion": "2026.4.4",
-    "lastTouchedAt": "2026-04-23T06:05:09.928Z"
+    "lastTouchedAt": "2026-04-23T06:05:34.750Z"
   },
   "wizard": {
     "lastRunAt": "2026-04-16T16:44:06.351Z",
@@ -51,8 +53,31 @@
   "models": {
     "mode": "merge",
     "providers": {
+      "protel": {
+        "baseUrl": "http://protel-proxy:11435/v1",
+        "api": "openai-completions",
+        "apiKey": "dummy_key",
+        "models": [
+          {
+            "id": "protel",
+            "name": "Protel Custom API",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 32000,
+            "maxTokens": 8192
+          }
+        ]
+      },
       "ollama": {
-        "baseUrl": "http://10.4.136.154:11434",
+        "baseUrl": "http://10.4.142.62:11434",
         "api": "ollama",
         "apiKey": "OLLAMA_API_KEY",
         "models": [
@@ -105,6 +130,25 @@
             "maxTokens": 8192
           }
         ]
+      },
+      "google": {
+        "baseUrl": "https://generativelanguage.googleapis.com/v1beta",
+        "api": "google-generative-ai",
+        "apiKey": "AIzaSyCLGNpKF8KTMtNm5ZNxdDGHp5TAJnF4y2M",
+        "models": [
+          {
+            "id": "gemini-1.5-flash",
+            "name": "Gemini 1.5 Flash",
+            "contextWindow": 1048576,
+            "maxTokens": 8192
+          },
+          {
+            "id": "gemini-1.5-pro",
+            "name": "Gemini 1.5 Pro",
+            "contextWindow": 2097152,
+            "maxTokens": 8192
+          }
+        ]
       }
     }
   },
@@ -150,7 +194,7 @@
         "enabled": false
       },
       "clawhub": {
-        "enabled": false
+        "enabled": true
       },
       "coding-agent": {
         "enabled": true
@@ -162,7 +206,7 @@
         "enabled": false
       },
       "gemini": {
-        "enabled": false
+        "enabled": true
       },
       "gh-issues": {
         "enabled": false
@@ -274,6 +318,9 @@
       },
       "xurl": {
         "enabled": false
+      },
+      "windows-launcher": {
+        "enabled": true
       }
     }
   }

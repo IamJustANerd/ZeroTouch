@@ -60,8 +60,17 @@ app.post('/v1/chat/completions', async (req, res) => {
     }
 
     const data = await response.json();
-    console.log("Protel API response data:", JSON.stringify(data).substring(0, 500));
-    const aiResponseText = data?.response?.response || "No response received";
+    console.log("Protel API raw response:", JSON.stringify(data, null, 2));
+
+    // Try multiple common response shapes from the Protel API
+    const aiResponseText =
+      (typeof data?.response === 'string' ? data.response : null) ||
+      data?.response?.response ||
+      data?.choices?.[0]?.message?.content ||
+      data?.text ||
+      data?.output ||
+      data?.result ||
+      "No response received (unknown API shape — check raw log above)";
 
     if (req.body.stream) {
       res.setHeader('Content-Type', 'text/event-stream');

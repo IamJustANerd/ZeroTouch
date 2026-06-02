@@ -6,6 +6,7 @@ import time
 import numpy as np
 import tensorflow as tf
 import pyautogui
+import ctypes
 from collections import deque
 import sys
 import os
@@ -16,7 +17,8 @@ def get_asset_path(relative_path):
         # PyInstaller creates a temp folder and stores path in _MEIPASS
         base_path = sys._MEIPASS
     except Exception:
-        base_path = os.path.abspath(".")
+        # Use the directory of the current script, not the cwd
+        base_path = os.path.dirname(os.path.abspath(__file__))
 
     return os.path.join(base_path, relative_path)
 
@@ -149,6 +151,10 @@ class HandTracker:
         
         raw_x = np.interp(w, [0.2, 0.8], [10, self.screen_width - 10])
         raw_y = np.interp(h, [0.2, 0.8], [10, self.screen_height - 10])
+
+        prev_x = self.smooth_x
+        prev_y = self.smooth_y
+
         self.smooth_x = self.alpha * raw_x + (1 - self.alpha) * self.smooth_x
         self.smooth_y = self.alpha * raw_y + (1 - self.alpha) * self.smooth_y
 
@@ -166,7 +172,9 @@ class HandTracker:
 
         elif mlp_gesture == "Fist":
             pyautogui.mouseDown()
-            pyautogui.moveTo(self.smooth_x, self.smooth_y)
+            dx = int(self.smooth_x - prev_x)
+            dy = int(self.smooth_y - prev_y)
+            ctypes.windll.user32.mouse_event(0x0001, dx, dy, 0, 0) # MOUSEEVENTF_MOVE
             self.click_active = False
             self.last_pinch_dist = None
 

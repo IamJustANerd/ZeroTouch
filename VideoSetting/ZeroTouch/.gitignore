@@ -1,0 +1,30 @@
+# Python virtual environments
+venv/
+.venv/
+env/
+
+# Build and Distribution
+dist/
+build/
+*.spec
+
+# Byte-compiled / optimized / DLLs
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyd
+*.dll
+*.so
+
+# Data and Models (Optional: ignore if they are too large)
+gesture_data.csv
+# hand_landmarker.task  # Keep if < 100MB
+# gesture_classifier.keras
+
+# IDEs
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db

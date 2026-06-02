@@ -11,8 +11,9 @@ services:
       CLAUDE_WEB_COOKIE: ${CLAUDE_WEB_COOKIE:-}
       TZ: ${OPENCLAW_TZ:-UTC}
       OPENCLAW_GATEWAY_MODE: ${OPENCLAW_GATEWAY_MODE:-local}
-      OLLAMA_API_KEY: ollama-local
+      OLLAMA_API_KEY: ${OLLAMA_API_KEY:-ollama-local}
       OLLAMA_BASE_URL: http://host.docker.internal:11434
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
     volumes:
       - ${OPENCLAW_CONFIG_DIR}:/home/node/.openclaw
       - ${OPENCLAW_WORKSPACE_DIR}:/home/node/.openclaw/workspace

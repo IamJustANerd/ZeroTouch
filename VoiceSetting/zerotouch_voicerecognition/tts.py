@@ -8,13 +8,10 @@ def synthesize_indonesian(text: str, output_path: str):
     # Paths to the model and Piper executable
     base_dir = os.path.dirname(__file__)
     model_path = os.path.join(base_dir, "models", "id_ID-news_tts-medium.onnx")
-    piper_exe = os.path.join(base_dir, "venv", "Scripts", "piper.exe")
+    piper_exe = "piper"  # Since we installed it globally via pip install piper-tts
 
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Model not found at: {model_path}")
-    
-    if not os.path.exists(piper_exe):
-        raise FileNotFoundError(f"Piper executable not found at: {piper_exe}")
 
     print(f"Synthesizing: \"{text}\"")
 
@@ -28,9 +25,9 @@ def synthesize_indonesian(text: str, output_path: str):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
-        print(f"✅ Audio successfully saved to: {output_path}")
+        print(f"Audio successfully saved to: {output_path}")
     except subprocess.CalledProcessError as e:
-        print("❌ Error during synthesis!")
+        print("Error during synthesis!")
         print(e.stderr.decode("utf-8"))
 
 if __name__ == "__main__":

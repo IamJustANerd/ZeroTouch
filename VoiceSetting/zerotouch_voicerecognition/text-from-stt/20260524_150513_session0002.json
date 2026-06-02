@@ -1,0 +1,10 @@
+{
+  "timestamp": "2026-05-24T15:05:13.131721",
+  "session_id": 2,
+  "wake_word": "hey jarvis",
+  "wake_word_confidence": 0.9818,
+  "transcription": "Tolong berikan saya transkripsi yang jelas mengenai proyek telematika dan saat ini saya sedang berada di Surabaya dengan kondisi yang sangat panas. Dan di sini saya sedang di kampus menjaga praktikum dan melihat apakah produk yang saya buat ini berjalan dengan lancar tanpa adanya kesalahan dalam kata-kata dan bahasa. Semoga yang dilaksanakan berjalan dengan baik dan kita akan lihat hasilnya sebentar lagi.",
+  "language": "id",
+  "stt_model": "small",
+  "duration_seconds": 48.32
+}

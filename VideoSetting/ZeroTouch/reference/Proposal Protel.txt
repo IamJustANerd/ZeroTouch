@@ -1,0 +1,419 @@
+﻿Proposal Proyek Telematika
+ZeroTouch: Non-Contact Interface for Contamination-Free Operating Rooms
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Anggota Kelompok:
+	Ignasius Deva
+	5024231003
+	Rendy Lexxy Kurniawan
+	5024231007
+	Michael
+	5024231022
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+DEPARTEMEN TEKNIK KOMPUTER
+FAKULTAS TEKNOLOGI ELEKTRO DAN INFORMATIKA CERDAS
+INSTITUT TEKNOLOGI SEPULUH NOPEMBER
+SURABAYA
+Permasalahan[a]
+1. Tingginya Risiko Kontaminasi Silang (Fomites): Meskipun berada di lingkungan steril, perangkat konvensional seperti keyboard dan mouse terbukti memiliki tingkat kontaminasi mikroba hingga 95%. Perangkat ini sangat sulit disterilkan secara menyeluruh, namun masih menjadi dominasi alat interaksi di rumah sakit, sehingga meningkatkan risiko infeksi pada pasien.
+2. Interupsi Alur Kerja dan Pemborosan Waktu Operasi: Aturan medan steril melarang dokter bedah berinteraksi langsung dengan komputer. Jika dokter terpaksa keluar dari zona steril (scrubbing out) untuk mengoperasikan komputer, proses sterilisasi ulang dapat memakan waktu 20 hingga 60 menit dalam case tertentu. Interupsi waktu operasi ini terbukti meningkatkan risiko kesalahan medis dan memperburuk hasil akhir (outcome) pemulihan pasien.
+3. Ketergantungan Navigasi yang Menurunkan Otonomi Dokter: Mendelegasikan kendali mouse kepada asisten non-steril sering memakan waktu beberapa menit hanya untuk memposisikan gambar (view) dengan benar. Kehilangan otonomi dan lambatnya navigasi ini sangat tidak efisien dalam situasi kritis, yang pada akhirnya menurunkan kemauan dokter untuk merujuk pada pencitraan medis intraoperatif (PACS).
+4. Inkompatibilitas Ergonomis Perangkat dengan APD: Penggunaan sarung tangan bedah membuat layar sentuh (touchscreen) menjadi tidak responsif dan tidak dapat diandalkan. Di sisi lain, teknologi alternatif seperti Mixed Reality (MR/AR) memunculkan masalah ergonomis baru berupa perangkat yang berat, membatasi jarak pandang, dan menambah kekacauan kabel (clutter) yang mengganggu ketangkasan dokter.
+
+
+Solusi yang Ditawarkan:
+1. Rancang bangun sistem antarmuka non-kontak berbasis interaksi gestur dan suara sebagai upaya pencegahan penyebaran fomites dan menjaga sterilitas tindakan medis di ruang operasi.
+2. Implementasi kontrol gestur tangan yang intuitif dan meniru manipulasi fisik dunia nyata (natural mapping), seperti gerakan mengepal untuk melakukan rotasi model 3D atau menunjuk untuk menggeser kursor, guna menjaga beban kognitif dokter tetap rendah.
+3. Integrasi fitur Voice Detection melalui algoritma keyword spotting untuk melakukan pencarian dokumen rekam medis atau memverifikasi riwayat alergi pasien tanpa perlu mengetik.
+4. Penerapan teknologi Offline Edge Computing dalam pemrosesan AI untuk memastikan seluruh data medis pasien tetap luring, aman, dan mematuhi regulasi privasi (seperti Permenkes atau HIPAA) tanpa perlu terhubung ke server cloud pihak ketiga.
+5. Optimalisasi waktu respons dengan harapan agar sistem memiliki standar Ultra-Low Latency atau mendekati untuk menjaga sinkronisasi koordinasi mata dan tangan dokter saat mengoperasikan gambar medis yang kompleks.
+6. Penyediaan mekanisme "Kopling" (Clutch Mechanism) untuk mencegah perintah palsu (false positives), memastikan sistem hanya aktif saat dokter memberikan pemicu spesifik yang disengaja.
+7. Sistem dirancang sebagai periferal input pengganti mouse (bukan alat diagnostik), sehingga tidak mengubah data medis asli dan memudahkan proses implementasi tanpa memerlukan uji klinis yang rumit.
+
+
+Cara Kerja Sistem
+* ZeroTouch diinstal secara lokal pada terminal komputer ruang operasi, menjalankan model deteksi visi dan audio secara luring untuk menjamin keamanan infrastruktur rumah sakit.
+* Sistem dilengkapi dengan mekanisme aktivasi sadar (Wake State), dimana modul navigasi hanya akan aktif jika dokter menahan gestur telapak tangan terbuka selama 2 detik secara konstan di depan sensor kamera.
+* Model visi memproses frame koordinat tulang tangan (Hand Landmarks) secara langsung dan segera menghapus data gambar dari RAM setelah koordinat didapatkan untuk menjaga kerahasiaan identitas di dalam ruang operasi.
+* Sistem mampu bekerja secara akurat di bawah kondisi lingkungan ekstrim ruang operasi, termasuk paparan cahaya lampu bedah yang sangat terang (overexposure) dan kebisingan suara mesin medis hingga tingkat 80 dB.
+* Setelah aktif, perintah dari dokter akan diterjemahkan menjadi aksi navigasi standar pada layar, seperti:
+   * Gestur Mengepal & Menarik: Melakukan Zoom-in atau Zoom-out pada gambar PACS.
+   * Gestur Memutar: Melakukan rotasi pada model navigasi bedah 3D.
+   * Perintah Suara: Mengeksekusi pencarian spesifik seperti "Tampilkan rekam medis pasien X".
+* Sistem menerapkan prinsip Fail-Safe, di mana jika terjadi gangguan pada program AI, sistem akan menutup proses secara otomatis tanpa membuat komputer rumah sakit menjadi hang, sehingga dokter tetap dapat menggunakan mouse fisik sebagai cadangan instan.
+* Hasil eksekusi perintah memberikan umpan balik visual instan di layar untuk membantu koordinasi presisi dokter bedah tanpa mengganggu fokus pada meja operasi.
+
+
+Nama Anggota Tim dan Pembagian Tugas
+1. Ignasius Deva: Gesture Recognition
+2. Rendy Lexxy Kurniawan: Voice Recognition, STT, and TTS
+3. Michael: App Integration and Streamlining
+
+
+Flowchart
+  
+
+
+
+Use Case Diagram
+  
+
+Timeline Pengerjaan
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+KEGIATAN
+	Maret 2026
+	April 2026
+	Mei 2026
+	Juni 2026
+	Planning & Analisis Kebutuhan (NFR)
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	Research Stack
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	Pengumpulan Dataset & Model Training
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	Develop Pipeline (Gesture, Voice, Integration)
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	Integrasi PACS, EMR, & Navigasi 3D
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	Testing Robustness (Cahaya & Noise)
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	Debugging & Final Optimization
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	Implementasi & Dokumentasi Akhir
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+
+
+
+
+
+
+[a]Hambatan komunikasi dan penundaan (delay) waktu yang krusial terjadi saat dokter bedah harus mendelegasikan navigasi komputer kepada perawat sirkuler di zona non-steril.
+Penggunaan pembungkus plastik (sterile drapes) pada perangkat membuat layar sentuh menjadi tidak responsif dan kerutan plastik sering kali menutupi detail penting pada gambar medis digital seperti X-Ray atau CT Scan.
+Meskipun menggunakan perangkat medical-grade, risiko kontaminasi tetap ada karena dokter yang menyentuh perangkat tersebut di luar area bedah tetap dianggap telah mengkontaminasi sarung tangan mereka, sehingga harus melalui prosedur penggantian yang membuang waktu.
+Prosedur scrubbing out (melepas APD untuk mengakses komputer secara manual) mengakibatkan pemborosan waktu yang sangat besar dan peningkatan biaya limbah medis karena dokter harus mencuci tangan kembali dan mengenakan gaun serta sarung tangan baru.
+Kebutuhan akses data instan pada sistem PACS (gambar medis) atau rekam medis elektronik (EMR) saat terjadi situasi darurat di meja operasi seringkali terhambat oleh keterbatasan interaksi fisik yang steril, yang mana keterlambatan dalam hitungan menit dapat berakibat fatal bagi pasien.
+Sistem input konvensional tidak mampu memfasilitasi kebutuhan bedah presisi, seperti memutar model anatomi 3D secara intuitif, yang sangat penting untuk akurasi tindakan pada bedah saraf atau ortopedi.

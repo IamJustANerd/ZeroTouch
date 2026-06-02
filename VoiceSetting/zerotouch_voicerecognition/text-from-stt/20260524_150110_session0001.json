@@ -1,0 +1,10 @@
+{
+  "timestamp": "2026-05-24T15:01:10.157665",
+  "session_id": 1,
+  "wake_word": "hey jarvis",
+  "wake_word_confidence": 0.9815,
+  "transcription": "Halo, berikan saya informasi mengenai praktikum yang sedang berjalan dan guide me terhadap hal-hal yang diberikan. Ada randang dapet? Berikut yang ditambahkan, pastikan semuanya berjalan dengan lancar dan tidak ada gangguan di tengah-tengahnya.",
+  "language": "id",
+  "stt_model": "small",
+  "duration_seconds": 43.44
+}

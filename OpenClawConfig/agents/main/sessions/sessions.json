@@ -1,12 +1,9 @@
 {
   "agent:main:main": {
-    "sessionId": "6853ff97-f3aa-46d5-9301-87290c74a4a7",
-    "updatedAt": 1778480043678,
+    "sessionId": "d2e6c17b-1a8e-4207-b65a-54a1dbba8b9b",
+    "updatedAt": 1780250223435,
     "systemSent": true,
     "abortedLastRun": false,
-    "authProfileOverride": "protel:default",
-    "authProfileOverrideSource": "auto",
-    "authProfileOverrideCompactionCount": 0,
     "chatType": "direct",
     "deliveryContext": {
       "channel": "webchat",
@@ -21,7 +18,7 @@
       "from": "heartbeat",
       "to": "heartbeat"
     },
-    "sessionFile": "/home/node/.openclaw/agents/main/sessions/6853ff97-f3aa-46d5-9301-87290c74a4a7.jsonl",
+    "sessionFile": "/home/node/.openclaw/agents/main/sessions/d2e6c17b-1a8e-4207-b65a-54a1dbba8b9b.jsonl",
     "compactionCount": 0,
     "skillsSnapshot": {
       "prompt": "",
@@ -29,15 +26,12 @@
       "resolvedSkills": [],
       "version": 0
     },
-    "status": "done",
-    "startedAt": 1778480031194,
-    "modelProvider": "protel",
-    "model": "protel",
-    "contextTokens": 32000,
+    "status": "failed",
+    "startedAt": 1780250221024,
     "systemPromptReport": {
       "source": "run",
-      "generatedAt": 1778480031136,
-      "sessionId": "6853ff97-f3aa-46d5-9301-87290c74a4a7",
+      "generatedAt": 1780119759317,
+      "sessionId": "d2e6c17b-1a8e-4207-b65a-54a1dbba8b9b",
       "sessionKey": "agent:main:main",
       "provider": "protel",
       "model": "protel",
@@ -56,33 +50,33 @@
         "sandboxed": false
       },
       "systemPrompt": {
-        "chars": 25422,
-        "projectContextChars": 14720,
-        "nonProjectContextChars": 10702
+        "chars": 19310,
+        "projectContextChars": 8225,
+        "nonProjectContextChars": 11085
       },
       "injectedWorkspaceFiles": [
         {
           "name": "AGENTS.md",
           "path": "/home/node/.openclaw/workspace/AGENTS.md",
           "missing": false,
-          "rawChars": 7809,
-          "injectedChars": 7809,
+          "rawChars": 691,
+          "injectedChars": 691,
           "truncated": false
         },
         {
           "name": "SOUL.md",
           "path": "/home/node/.openclaw/workspace/SOUL.md",
           "missing": false,
-          "rawChars": 2771,
-          "injectedChars": 2771,
+          "rawChars": 3796,
+          "injectedChars": 3796,
           "truncated": false
         },
         {
           "name": "TOOLS.md",
           "path": "/home/node/.openclaw/workspace/TOOLS.md",
           "missing": false,
-          "rawChars": 850,
-          "injectedChars": 850,
+          "rawChars": 448,
+          "injectedChars": 448,
           "truncated": false
         },
         {
@@ -123,8 +117,8 @@
         "entries": []
       },
       "tools": {
-        "listChars": 2239,
-        "schemaChars": 16723,
+        "listChars": 2657,
+        "schemaChars": 18788,
         "entries": [
           {
             "name": "read",
@@ -173,6 +167,12 @@
             "summaryChars": 152,
             "schemaChars": 223,
             "propertiesCount": 2
+          },
+          {
+            "name": "image_generate",
+            "summaryChars": 435,
+            "schemaChars": 1195,
+            "propertiesCount": 10
           },
           {
             "name": "agents_list",
@@ -224,15 +224,27 @@
           },
           {
             "name": "web_search",
-            "summaryChars": 93,
-            "schemaChars": 446,
-            "propertiesCount": 4
+            "summaryChars": 123,
+            "schemaChars": 574,
+            "propertiesCount": 7
           },
           {
             "name": "web_fetch",
             "summaryChars": 129,
             "schemaChars": 374,
             "propertiesCount": 3
+          },
+          {
+            "name": "image",
+            "summaryChars": 201,
+            "schemaChars": 342,
+            "propertiesCount": 6
+          },
+          {
+            "name": "pdf",
+            "summaryChars": 275,
+            "schemaChars": 400,
+            "propertiesCount": 6
           },
           {
             "name": "browser",
@@ -256,8 +268,16 @@
       }
     },
     "totalTokensFresh": false,
+    "providerOverride": "protel",
+    "modelOverride": "protel",
+    "modelProvider": "protel",
+    "model": "protel",
+    "contextTokens": 32000,
+    "authProfileOverride": "protel:default",
+    "authProfileOverrideSource": "auto",
+    "authProfileOverrideCompactionCount": 0,
     "lastTo": "heartbeat",
-    "endedAt": 1778480043508,
-    "runtimeMs": 12314
+    "endedAt": 1780250223414,
+    "runtimeMs": 2390
   }
 }
