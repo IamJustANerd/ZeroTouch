@@ -39,6 +39,7 @@ import json
 import math
 import logging
 import warnings
+import subprocess
 
 # ── Fix terminal encoding on Windows ─────────────────────────────
 os.environ["PYTHONIOENCODING"] = "utf-8"
@@ -50,6 +51,7 @@ warnings.filterwarnings("ignore")
 
 import numpy as np
 import requests
+import emr_rag
 
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout,
@@ -513,7 +515,21 @@ class ZeroTouchV0(QMainWindow):
         self._stt_state = "IDLE"
         self._pulse_val = 0.0
 
+        # Start host_bridge.py
+        try:
+            self._host_bridge_process = subprocess.Popen(
+                [sys.executable, os.path.join(ROOT, "host_bridge.py")],
+                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == 'nt' else 0
+            )
+            print("[app] Started host_bridge.py")
+        except Exception as e:
+            print(f"[app] Failed to start host_bridge.py: {e}")
+            self._host_bridge_process = None
+
         self._stt_overlay = STTOverlayWindow()
+
+        # Start RAG indexer in background
+        emr_rag.initialize()
 
         self._setup_ui()
         self._start_threads()
@@ -789,7 +805,7 @@ class ZeroTouchV0(QMainWindow):
             import difflib
             
             matched = next((app for kw, app in APP_KEYWORDS.items() if kw in text_lower), None)
-            file_match = re.search(r'(?:buka|open|tampilkan)\s+([a-zA-Z0-9_\-\.\s]+)', text_lower)
+            file_match = re.search(r'(?:buka|open|tampilkan)\s+([a-zA-Z0-9_\-\.\s\,]+)', text_lower)
             
             if matched:
                 ok = send_to_openclaw(text)
@@ -800,20 +816,35 @@ class ZeroTouchV0(QMainWindow):
                     status = "❌ Failed to reach host_bridge.py — is it running?"
                 self._add_chat("System", status, is_user=False)
             elif file_match:
-                workspace_dir = r"E:\OpenClawProject\test_folder"
-                target_word = file_match.group(1).strip()
+                workspace_dir = os.path.join(ROOT, "OpenClawProject", "Patient")
+                target_word = file_match.group(1).strip().replace(',', '')
                 try:
-                    files = [f for f in os.listdir(workspace_dir) if os.path.isfile(os.path.join(workspace_dir, f))]
-                    # Low cutoff for aggressive matching (images.gpg -> images.jpg)
-                    matches = difflib.get_close_matches(target_word, files, n=1, cutoff=0.3)
+                    file_mapping = {}
+                    search_corpus = []
+                    for root_dir, _, files in os.walk(workspace_dir):
+                        for f in files:
+                            filepath = os.path.join(root_dir, f)
+                            parts = filepath.split(os.sep)
+                            if len(parts) >= 2:
+                                patient_name = parts[-2].replace("_", " ").lower()
+                                filename = parts[-1].lower()
+                                search_term = f"{filename} {patient_name}"
+                                file_mapping[search_term] = filepath
+                                search_corpus.append(search_term)
+                                file_mapping[filename] = filepath
+                                search_corpus.append(filename)
+
+                    matches = difflib.get_close_matches(target_word, search_corpus, n=1, cutoff=0.3)
                     
                     if matches:
-                        best_match = matches[0]
+                        best_match_key = matches[0]
+                        best_match_path = file_mapping[best_match_key]
+                        best_match_name = os.path.basename(best_match_path)
                         try:
-                            r = requests.post(HOST_BRIDGE_URL, json={"action": "open", "file": best_match}, timeout=5)
+                            r = requests.post(HOST_BRIDGE_URL, json={"action": "open", "file": best_match_path}, timeout=5)
                             if r.ok:
-                                status = f"✅ Opening file {best_match}..."
-                                self._speak(f"Membuka file {best_match}")
+                                status = f"✅ Opening file {best_match_name}..."
+                                self._speak(f"Membuka file {best_match_name}")
                             else:
                                 status = "❌ Failed to reach host_bridge.py"
                         except Exception:
@@ -841,10 +872,15 @@ class ZeroTouchV0(QMainWindow):
         try:
             import uuid
             import os
+            import re
+            
             out_file = f"tts_out_{uuid.uuid4().hex[:6]}.wav"
             
+            # Clean up text for TTS (remove markdown symbols)
+            tts_text = re.sub(r'[*+#_~`\[\]()]', '', text)
+            
             from tts import synthesize_indonesian
-            synthesize_indonesian(text, out_file)
+            synthesize_indonesian(tts_text, out_file)
             
             # Play audio using winsound
             import winsound
@@ -857,21 +893,46 @@ class ZeroTouchV0(QMainWindow):
     def _llm_tts_worker(self, prompt: str):
         self._add_chat("System", "Thinking...", is_user=False)
         try:
+            # ── RAG: retrieve relevant patient context ──────────
+            # Augment the semantic search query to anchor it to medical records
+            # so queries like "data budi santoso" still match the medical domain
+            search_query = f"{prompt} rekam medis pasien"
+            rag_context = emr_rag.query(search_query) if emr_rag.is_ready() else None
+
+            if rag_context:
+                system_prompt = (
+                    "Anda adalah Jarvis, asisten AI medis untuk dokter bedah ProTel. "
+                    "Jawab pertanyaan dokter HANYA berdasarkan data rekam medis yang diberikan. "
+                    "Jika informasi tidak ada dalam konteks, katakan bahwa data tidak tersedia. "
+                    "Jawab singkat, padat, dan akurat dalam bahasa Indonesia."
+                )
+                augmented = (
+                    f"Data Rekam Medis Pasien:\n{rag_context}\n\n"
+                    f"Pertanyaan Dokter: {prompt}"
+                )
+                self._add_chat("System", "📋 Menggunakan data rekam medis...", is_user=False)
+            else:
+                system_prompt = (
+                    "Anda adalah Jarvis, asisten AI medis untuk dokter bedah ProTel. "
+                    "Jika dokter menanyakan data pasien, beri tahu bahwa rekam medis pasien tersebut tidak ditemukan di database lokal. "
+                    "Jawab singkat, padat, dan profesional dalam bahasa Indonesia."
+                )
+                augmented = prompt
+
             r = requests.post("http://localhost:11434/api/generate", json={
                 "model": "llama3.2:latest",
-                "prompt": prompt,
+                "prompt": augmented,
                 "stream": False,
-                "system": "Anda adalah Jarvis, asisten AI untuk dokter bedah ProTel. Jawab singkat dan padat dalam bahasa Indonesia."
+                "system": system_prompt,
             }, timeout=30)
-            
+
             if r.ok:
                 response_text = r.json().get("response", "").strip()
                 self._add_chat("Jarvis", response_text, is_user=False)
-                # Play it!
                 self._tts_worker(response_text)
             else:
                 self._add_chat("System", f"❌ LLM error: {r.status_code}", is_user=False)
-                
+
         except Exception as e:
             self._add_chat("System", f"❌ LLM/TTS Error: {e}", is_user=False)
 
@@ -984,6 +1045,14 @@ class ZeroTouchV0(QMainWindow):
     # ── CLEANUP ───────────────────────────────────────────────
     def closeEvent(self, event):
         print("[app] Shutting down…")
+        if hasattr(self, '_host_bridge_process') and self._host_bridge_process is not None:
+            print("[app] Terminating host_bridge.py…")
+            self._host_bridge_process.terminate()
+            try:
+                self._host_bridge_process.wait(timeout=3)
+            except subprocess.TimeoutExpired:
+                self._host_bridge_process.kill()
+                
         self._stt_overlay.close()
         self._pulse_timer.stop()
         self._gest_thread.stop()
