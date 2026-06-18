@@ -24,7 +24,7 @@ def get_asset_path(relative_path):
 
 # PERFORMANCE TWEAKS:
 pyautogui.PAUSE = 0 
-pyautogui.FAILSAFE = True 
+pyautogui.FAILSAFE = False 
 
 class ClutchManager:
     """

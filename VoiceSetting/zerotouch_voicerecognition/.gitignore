@@ -1,5 +1,30 @@
 venv/
-help.txt
-stt-audio/
+__pycache__/
 check_venv.py
+
+help.txt
+
+#Antigravity package files
 .antigravity/
+
+# Wake Word Training Cache
+models/hello_zerotouch/
+training_data/resampled_16k/
+training_data_v2/
+
+#Logs
+scripts/training/logs/
+
+*.npy
+*.pt
+
+#All training audio datasets if they are too large
+training_data/
+
+#Negative samples training data
+ESC-50/
+
+#Output testing
+stt-audio/
+text-from-stt/
+tts-audio/

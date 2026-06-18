@@ -1,7 +1,7 @@
 {
   "agent:main:main": {
-    "sessionId": "3f8920d8-2314-4f0b-a0d9-8b6d3780a593",
-    "updatedAt": 1780764885550,
+    "sessionId": "1699e45a-c0bb-46e5-afc5-dc9feeb2c9c3",
+    "updatedAt": 1781753821170,
     "systemSent": true,
     "abortedLastRun": false,
     "chatType": "direct",
@@ -18,7 +18,7 @@
       "from": "heartbeat",
       "to": "heartbeat"
     },
-    "sessionFile": "/home/node/.openclaw/agents/main/sessions/3f8920d8-2314-4f0b-a0d9-8b6d3780a593.jsonl",
+    "sessionFile": "/home/node/.openclaw/agents/main/sessions/1699e45a-c0bb-46e5-afc5-dc9feeb2c9c3.jsonl",
     "compactionCount": 0,
     "skillsSnapshot": {
       "prompt": "",
@@ -27,7 +27,7 @@
       "version": 0
     },
     "status": "failed",
-    "startedAt": 1780764869964,
+    "startedAt": 1781753819034,
     "totalTokensFresh": false,
     "providerOverride": "protel",
     "modelOverride": "protel",
@@ -35,7 +35,7 @@
     "authProfileOverrideSource": "auto",
     "authProfileOverrideCompactionCount": 0,
     "lastTo": "heartbeat",
-    "endedAt": 1780764885525,
-    "runtimeMs": 15561
+    "endedAt": 1781753821157,
+    "runtimeMs": 2123
   }
 }

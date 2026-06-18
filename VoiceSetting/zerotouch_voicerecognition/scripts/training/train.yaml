@@ -1,0 +1,25 @@
+augmentation_batch_size: 128
+augmentation_rounds: 1
+background_paths: []
+background_paths_duplication_rate: []
+batch_n_per_class:
+  adversarial_negative: 128
+  positive: 128
+custom_negative_phrases: []
+false_positive_validation_data_path: dummy_fp.npy
+feature_data_files: {}
+layer_size: 128
+max_negative_weight: 1000
+model_name: hello_zerotouch
+model_type: dnn
+n_blocks: 1
+n_samples: 1450
+n_samples_val: 145
+output_dir: models
+piper_sample_generator_path: .
+rir_paths: []
+steps: 1000
+target_false_positives_per_hour: 0.1
+target_phrase:
+- hello zero touch
+tts_batch_size: 10

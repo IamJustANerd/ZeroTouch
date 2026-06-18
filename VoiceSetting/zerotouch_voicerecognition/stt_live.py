@@ -48,7 +48,7 @@ OWW_CHUNK_SIZE = 1280
 
 # TURUNKAN THRESHOLD agar deteksi suara manusiamu bisa mereset timer
 SILENCE_THRESHOLD = 0.01    
-SILENCE_TIMEOUT   = 3.5     
+SILENCE_TIMEOUT   = 3.5
 
 OUTPUT_DIR = "text-from-stt"   
 # ═════════════════════════════════════════════════════════════════
