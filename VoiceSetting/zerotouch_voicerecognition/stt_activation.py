@@ -245,11 +245,11 @@ def main() -> None:
                             beam_size=5,
                             language=LANGUAGE,
                             vad_filter=True,
-                            vad_parameters=dict(min_silence_duration_ms=400),
-                            condition_on_previous_text=True,
-                            initial_prompt=(
-                                "Berikut adalah percakapan dalam bahasa Indonesia, kata yang dibicarakan adalah kata formal dan informal, pastikan hasil transkripsi adalah kata yang valid."
-                            ),
+                            vad_parameters=dict(min_silence_duration_ms=400, threshold=0.5),
+                            condition_on_previous_text=False,
+                            # initial_prompt=(
+                                # "percakapan, bahasa indonesia, kata formal, kata informal, kalimat valid"
+                            # ),
                         )
 
                         text_parts    = [seg.text.strip() for seg in segments]

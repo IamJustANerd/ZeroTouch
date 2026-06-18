@@ -18,11 +18,13 @@ def normalize_english_to_indo(text: str) -> str:
 
 def synthesize_indonesian(text: str, output_path: str, length_scale: float = 1.0, noise_scale: float = 0.667, noise_w: float = 0.8):
     """
-    Synthesize Indonesian text to speech using Piper CLI.
+    Synthesize Indonesian text to speech using Piper.
+    Runs piper as a Python module (sys.executable -m piper) so it works
+    in any virtual environment without needing a hardcoded executable path.
     """
-    # Paths to the model and Piper executable
     base_dir = os.path.dirname(__file__)
     model_path = os.path.join(base_dir, "models", "id_ID-news_tts-medium.onnx")
+
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Model not found at: {model_path}")
 
@@ -32,27 +34,25 @@ def synthesize_indonesian(text: str, output_path: str, length_scale: float = 1.0
     print(f"Original Text: \"{text}\"")
     print(f"Synthesizing (Phonetic): \"{phonetic_text}\"")
 
-    # Run piper via subprocess with advanced parameters for better naturalness
-    # We pipe the text to standard input of the piper module
     try:
-        process = subprocess.run(
+        subprocess.run(
             [
-                sys.executable, "-m", "piper", 
-                "--model", model_path, 
+                sys.executable, "-m", "piper",
+                "--model", model_path,
                 "--output_file", output_path,
                 "--length_scale", str(length_scale),
                 "--noise_scale", str(noise_scale),
-                "--noise_w", str(noise_w)
+                "--noise_w", str(noise_w),
             ],
             input=phonetic_text.encode("utf-8"),
             check=True,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
+            stderr=subprocess.PIPE,
         )
         print(f"✅ Audio successfully saved to: {output_path}")
     except subprocess.CalledProcessError as e:
         print("❌ Error during synthesis!")
-        print(e.stderr.decode("utf-8"))
+        print(e.stderr.decode("utf-8", errors="replace"))
 
 if __name__ == "__main__":
     # Test text in Indonesian mixed with English

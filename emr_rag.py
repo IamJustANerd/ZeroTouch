@@ -111,11 +111,12 @@ def query(question: str, top_k: int = 3) -> str | None:
         metas_res = results["metadatas"][0]
         dists     = results["distances"][0]
 
-        # cosine distance < 0.65 → genuinely relevant
+        # cosine distance < 0.75 → genuinely relevant.
+        # 0.65 was too tight: informal/mispronounced queries scored just above it.
         relevant = [
             (doc, meta)
             for doc, meta, dist in zip(docs, metas_res, dists)
-            if dist < 0.65
+            if dist < 0.75
         ]
         if not relevant:
             return None

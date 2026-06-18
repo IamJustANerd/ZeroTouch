@@ -1,9 +1,9 @@
 {
   "providers": {
     "ollama": {
-      "baseUrl": "http://localhost:11434",
+      "baseUrl": "http://host.docker.internal:11434/v1",
       "apiKey": "OLLAMA_API_KEY",
-      "api": "ollama",
+      "api": "openai-responses",
       "models": [
         {
           "id": "glm-4.7-flash",
@@ -18,9 +18,9 @@
             "cacheRead": 0,
             "cacheWrite": 0
           },
-          "contextWindow": 8192,
+          "contextWindow": 16000,
           "maxTokens": 8192,
-          "api": "ollama"
+          "api": "openai-responses"
         },
         {
           "id": "llama3.1",
@@ -35,9 +35,9 @@
             "cacheRead": 0,
             "cacheWrite": 0
           },
-          "contextWindow": 8192,
+          "contextWindow": 16000,
           "maxTokens": 8192,
-          "api": "ollama"
+          "api": "openai-responses"
         },
         {
           "id": "llama3.2:latest",
@@ -52,9 +52,9 @@
             "cacheRead": 0,
             "cacheWrite": 0
           },
-          "contextWindow": 8192,
+          "contextWindow": 16000,
           "maxTokens": 8192,
-          "api": "ollama"
+          "api": "openai-responses"
         }
       ]
     },

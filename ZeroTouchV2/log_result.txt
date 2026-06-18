@@ -1,0 +1,57 @@
+[v1] Started host_bridge_v1.py on port 5001
+==================================================
+  ZeroTouch V1  —  Host Bridge
+  Listening on  http://0.0.0.0:5001
+  Allowed apps: word, winword, excel, powerpoint, whatsapp, notepad, explorer, photos, chrome, edge, file
+  Endpoints:    /run  /screen  /rag  /health
+==================================================
+ * Serving Flask app 'host_bridge_v1'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5001
+ * Running on http://192.168.68.118:5001
+Press CTRL+C to quit
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1781446216.551230   16240 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1781446216.564699   16240 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+[stt] Loading Whisper model…
+[stt] Loading wake-word model…
+[stt] Ready.
+[rag] Loading multilingual embedding model…
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+W0000 00:00:1781446221.422159    6980 landmark_projection_calculator.cc:81] Using NORM_RECT without IMAGE_DIMENSIONS is only supported for the square ROI. Provide IMAGE_DIMENSIONS or use PROJECTION_MATRIX.
+Loading weights: 100%|███████████████████████████████████████████████████████████| 199/199 [00:00<00:00, 3009.24it/s]
+[stt] Transcribed: 'Terima kasih.'
+[rag]   Indexed: Agus Setiawan
+[rag]   Indexed: Budi Santoso
+[rag]   Indexed: Siti Aminah
+[rag] Ready — 10 chunks across 3 patients.
+[stt] Transcribed: 'Jarvis'
+Synthesizing: "Halo, ada yang bisa saya bantu?"
+[stt] Transcribed: ''
+[v1] Empty transcription ignored: '(nothing heard)'
+Audio successfully saved to: tts_v1_2ff56d.wav
+[stt] Transcribed: 'Tolong baca kan data pasien yang bernama Agus Setiawan.'
+QObject::setParent: Cannot set parent, new parent is in a different thread
+[v1] Turn 1 result: OpenClawResult(type='tool_call', text='', tools=[{'name': 'rag_search', 'params': {'query': 'data lengkap Agus Setiawan'}}])
+QObject::setParent: Cannot set parent, new parent is in a different thread
+[v1] RAG result (63 chars)
+[v1] Turn 2 result: OpenClawResult(type='text', text='Mohon maaf, tetapi saya tidak menemukan data rekam medis unt', tools=[])
+QObject::setParent: Cannot set parent, new parent is in a different thread
+QObject::setParent: Cannot set parent, new parent is in a different thread
+Synthesizing: "Mohon maaf, saya tidak menemukan data rekam medis Agus Setiawan. Pastikan Anda memasukkan informasi yang benar. Jika masih ada kesalahan, jangan ragu untuk menghubungi kami."
+Audio successfully saved to: tts_v1_1ffa4e.wav
+[stt] Transcribed: 'Tolong bukakan hasil scan pasien agus setiawan.'
+QObject::setParent: Cannot set parent, new parent is in a different thread
+[v1] Turn 1 result: OpenClawResult(type='tool_call', text='', tools=[{'name': 'find_patient_file', 'params': {'file_type': 'scan', 'patient_name': 'Agus Setiawan'}}])
+QObject::setParent: Cannot set parent, new parent is in a different thread
+[v1] Patient file found (score=1.05): E:\OpenclawMainFolder\OpenClawProject\Patient\Agus_Setiawan\scan.jpg
+[v1] Found patient file: E:\OpenclawMainFolder\OpenClawProject\Patient\Agus_Setiawan\scan.jpg
+[v1] Launching: action='photos' file='E:\\OpenclawMainFolder\\OpenClawProject\\Patient\\Agus_Setiawan\\scan.jpg'      
+Synthesizing: "Membuka file scan.jpg untuk Agus Setiawan."
+[bridge_v1 /run] Executing: start ms-photos: "E:\OpenclawMainFolder\OpenClawProject\Patient\Agus_Setiawan\scan.jpg"
+127.0.0.1 - - [14/Jun/2026 21:12:37] "POST /run HTTP/1.1" 200 -
+QObject::setParent: Cannot set parent, new parent is in a different thread
+Audio successfully saved to: tts_v1_4034e4.wav
