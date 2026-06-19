@@ -196,38 +196,28 @@ def screen_control():
     print(f"[bridge_v1 /screen] action={action!r} region={region!r} → ({px},{py}) times={times}")
 
     try:
-        if action == "zoom-in":
+        import ctypes
+        MOUSEEVENTF_WHEEL = 0x0800
+        
+        if action in ("zoom-in", "scroll-zoom-in"):
             pyautogui.moveTo(px, py, duration=0.15)
-            for _ in range(times):
-                pyautogui.hotkey("ctrl", "+")
-                time.sleep(0.08)
+            for _ in range(times * 10): 
+                ctypes.windll.user32.mouse_event(MOUSEEVENTF_WHEEL, 0, 0, 500, 0)
+                time.sleep(0.02)
 
-        elif action == "zoom-out":
+        elif action in ("zoom-out", "scroll-zoom-out"):
             pyautogui.moveTo(px, py, duration=0.15)
-            for _ in range(times):
-                pyautogui.hotkey("ctrl", "-")
-                time.sleep(0.08)
-
-        elif action == "scroll-zoom-in":
-            # Ctrl + scroll-up: more compatible across image viewers
-            pyautogui.moveTo(px, py, duration=0.15)
-            pyautogui.keyDown("ctrl")
-            pyautogui.scroll(times * 3, x=px, y=py)
-            pyautogui.keyUp("ctrl")
-
-        elif action == "scroll-zoom-out":
-            pyautogui.moveTo(px, py, duration=0.15)
-            pyautogui.keyDown("ctrl")
-            pyautogui.scroll(-times * 3, x=px, y=py)
-            pyautogui.keyUp("ctrl")
+            for _ in range(times * 10):
+                ctypes.windll.user32.mouse_event(MOUSEEVENTF_WHEEL, 0, 0, -500, 0)
+                time.sleep(0.02)
 
         elif action == "scroll-up":
             pyautogui.moveTo(px, py, duration=0.15)
-            pyautogui.scroll(times * 3, x=px, y=py)
+            ctypes.windll.user32.mouse_event(MOUSEEVENTF_WHEEL, 0, 0, times * 500, 0)
 
         elif action == "scroll-down":
             pyautogui.moveTo(px, py, duration=0.15)
-            pyautogui.scroll(-times * 3, x=px, y=py)
+            ctypes.windll.user32.mouse_event(MOUSEEVENTF_WHEEL, 0, 0, -times * 500, 0)
 
         elif action == "move":
             pyautogui.moveTo(px, py, duration=0.3)

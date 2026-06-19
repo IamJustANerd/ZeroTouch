@@ -6,12 +6,14 @@ from langgraph.prebuilt import create_react_agent
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 
 class ZeroTouchAgent:
-    def __init__(self, execute_launcher_cb, execute_screen_cb, find_patient_file_cb, rag_query_cb, rag_ready_cb):
+    def __init__(self, execute_launcher_cb, execute_screen_cb, find_patient_file_cb, rag_query_cb, rag_ready_cb, start_notul_cb, stop_notul_cb):
         self.execute_launcher = execute_launcher_cb
         self.execute_screen = execute_screen_cb
         self.find_patient_file = find_patient_file_cb
         self.rag_query = rag_query_cb
         self.rag_ready = rag_ready_cb
+        self.start_notul = start_notul_cb
+        self.stop_notul = stop_notul_cb
         self.session_history = []
         
         # ==========================================
@@ -99,7 +101,27 @@ class ZeroTouchAgent:
             
             return f"Layar di bagian {region} berhasil di-zoom {arah} sebanyak {jumlah} tingkat."
 
-        tools = [buka_aplikasi, buka_file, buka_info_pasien, buat_dan_tulis_file, buka_foto_pasien, zoom_layar]
+        @tool
+        def mulai_notulensi() -> str:
+            """
+            Mulai fitur perekaman notulensi. Semua perkataan dokter mulai saat ini akan dicatat diam-diam di latar belakang.
+            Gunakan tool ini jika dokter meminta 'mulai notulensi', 'tolong rekam', atau 'catat perkataan saya'.
+            """
+            print(f"\n[LangChain Tool] 📝 Executing: mulai_notulensi()")
+            self.start_notul()
+            return "Fitur notulensi telah diaktifkan. Semua ucapan dokter sekarang sedang direkam."
+
+        @tool
+        def berhenti_notulensi() -> str:
+            """
+            Berhentikan fitur notulensi. Catatan yang terekam akan dirapikan secara otomatis oleh sistem dan disimpan.
+            Gunakan tool ini jika dokter meminta 'berhenti notul', 'stop rekam', atau 'selesai catat'.
+            """
+            print(f"\n[LangChain Tool] 🛑 Executing: berhenti_notulensi()")
+            self.stop_notul()
+            return "Fitur notulensi dihentikan. Catatan sedang dirapikan dan disimpan."
+
+        tools = [buka_aplikasi, buka_file, buka_info_pasien, buat_dan_tulis_file, buka_foto_pasien, zoom_layar, mulai_notulensi, berhenti_notulensi]
         
         # PENTING: Gunakan 127.0.0.1 untuk mencegah WinError 10049
         llm = ChatOllama(model="llama3.1:latest", temperature=0, base_url="http://127.0.0.1:11434")
@@ -108,13 +130,12 @@ class ZeroTouchAgent:
         
         # System prompt yang ketat agar Llama 3.1 tidak berhalusinasi menghasilkan raw JSON
         self.system_prompt = SystemMessage(content=(
-            "Anda adalah Jarvis, asisten bedah AI cerdas. Anda memiliki akses ke beberapa fungsi (tools) untuk mengontrol komputer dan mengelola file medis.\n"
-            "ATURAN SANGAT PENTING:\n"
-            "1. JANGAN PERNAH membalas dengan format JSON mentah ke dokter.\n"
-            "2. Jika dokter meminta sesuatu, panggil tool yang sesuai secara internal.\n"
-            "3. Setelah tool selesai, konfirmasi ke dokter menggunakan 1 KATA atau 1 KALIMAT PENDEK berbahasa Indonesia.\n"
-            "4. Jika tidak ada tool yang cocok, berikan jawaban verbal yang ramah dan singkat.\n"
-            "5. JANGAN menuliskan markdown panjang, JANGAN menjelaskan parameter tool."
+            "Anda adalah Jarvis, asisten bedah AI cerdas. Anda merespons perintah dokter melalui speaker suara. "
+            "Tugas Anda: Panggil fungsi (tool) yang tepat secara internal, lalu berikan 1 KALIMAT PENDEK konfirmasi ke dokter. "
+            "PENTING: DILARANG KERAS mengucapkan kata-kata seperti 'Note:', 'Catatan:', 'Aturan', atau menjelaskan cara kerja tool. "
+            "Jika Anda tidak yakin terhadap suatu perintah atau konteksnya tidak jelas, Anda WAJIB bertanya kembali kepada dokter untuk klarifikasi. JANGAN PERNAH membuat asumsi apa pun. "
+            "Langsung ucapkan inti jawaban secara natural. Contoh yang benar: 'Baik, gambar telah diperbesar.' atau 'Maaf, data pasien siapa yang ingin Anda buka?' "
+            "Jangan pernah menampilkan format JSON."
         ))
 
     def process_prompt(self, prompt: str) -> str:

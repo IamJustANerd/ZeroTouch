@@ -193,10 +193,14 @@ class STTThread(QThread):
     def __init__(self):
         super().__init__()
         self._running      = True
-        self._force_listen = False
-        self._voice_awake  = False
         self._ptt_active   = threading.Event()
         self._ptt_stop     = threading.Event()
+        self._force_listen = False
+        self._voice_awake  = False
+        self._processing   = False  # Flag to block audio input while LLM is thinking
+
+    def set_processing(self, processing: bool):
+        self._processing = processing
 
     def set_force_listen(self, force: bool):
         self._force_listen = force
@@ -237,7 +241,8 @@ class STTThread(QThread):
         audio_q: queue.Queue = queue.Queue()
 
         def _cb(indata, frames, t, status):
-            audio_q.put(indata.copy())
+            if not getattr(self, "_processing", False):
+                audio_q.put(indata.copy())
 
         state           = S.IDLE
         buf             = []
@@ -487,6 +492,10 @@ class ZeroTouchV3(QMainWindow):
         # Short-term memory for the LLM during a single WAKE session.
         # Cleared when voice goes to SLEEP.
         self._session_history = []
+        
+        # State Notulensi
+        self.notulensi_active = False
+        self.notulensi_buffer = []
 
         # Auto-start host_bridge_v3.py (port 5003)
         try:
@@ -763,14 +772,19 @@ class ZeroTouchV3(QMainWindow):
         # Whisper sometimes returns an empty string or "(nothing heard)" when
         # there was silence or mic noise. Sending these to the LLM causes it
         # to hallucinate random tool calls. Drop them silently.
-        # IMPORTANT: do NOT put voice to sleep here.  Voice sleep is handled
-        # exclusively by _check_voice_wake_timeout (the VOICE_WAKE_TIMEOUT timer).
-        # Sleeping on every empty result would kill wake state after the first
-        # 3.5-second silence gap, making it impossible to hold a conversation.
         clean = text.strip()
         if not clean or clean == "(nothing heard)":
             print(f"[v1] Empty transcription ignored: {text!r}")
             return
+            
+        # ── Guard: Block if already processing ────────────────
+        if getattr(self._stt_thread, "_processing", False):
+            print(f"[v3] Transcription dropped (system is processing): {clean!r}")
+            return
+
+        # ── Record to Notulensi if active ─────────────────────
+        if self.notulensi_active:
+            self.notulensi_buffer.append(clean)
 
         self._stt_overlay.update_transcription(clean)
         text_lower = clean.lower()
@@ -814,17 +828,74 @@ class ZeroTouchV3(QMainWindow):
                 execute_screen_cb=self._execute_screen_control,
                 find_patient_file_cb=self._find_patient_file,
                 rag_query_cb=emr_rag.query,
-                rag_ready_cb=emr_rag.is_ready
+                rag_ready_cb=emr_rag.is_ready,
+                start_notul_cb=self._start_notulensi,
+                stop_notul_cb=self._stop_notulensi
             )
             print("[v3] LangChain Agent initialized.")
         except Exception as e:
             print(f"[v3] Error initializing LangChain Agent: {e}")
             self.lc_agent = None
 
+    def _start_notulensi(self):
+        self.notulensi_active = True
+        self.notulensi_buffer = []
+        print("[v3] Notulensi started.")
+
+    def _stop_notulensi(self):
+        self.notulensi_active = False
+        if not self.notulensi_buffer:
+            print("[v3] Notulensi stopped (empty).")
+            return
+        
+        # Simpan di background agar tidak memblokir antarmuka
+        buffer_copy = list(self.notulensi_buffer)
+        self.notulensi_buffer = []
+        threading.Thread(target=self._process_and_save_notulensi, args=(buffer_copy,), daemon=True).start()
+
+    def _process_and_save_notulensi(self, buffer_list):
+        print(f"[v3] Merapikan notulensi ({len(buffer_list)} baris)...")
+        raw_text = "\n".join(buffer_list)
+        
+        from langchain_community.chat_models import ChatOllama
+        from langchain_core.messages import HumanMessage
+        llm = ChatOllama(model="llama3.1:latest", temperature=0, base_url="http://127.0.0.1:11434")
+        
+        prompt = (
+            "Berikut adalah hasil transkripsi kasar dari ucapan seorang dokter selama pemeriksaan:\n\n"
+            f"{raw_text}\n\n"
+            "Tugas Anda: Rapikan teks di atas menjadi catatan medis/notulensi yang terstruktur dan profesional. "
+            "Hilangkan kata-kata pengisi, kesalahan pengucapan, atau perintah ke asisten AI (seperti 'Jarvis tolong...'). "
+            "Jangan tambahkan informasi medis yang tidak ada di teks asli. "
+            "Gunakan bahasa Indonesia yang baku dan format yang rapi."
+        )
+        
+        try:
+            response = llm.invoke([HumanMessage(content=prompt)])
+            cleaned_text = response.content
+            
+            notul_dir = os.path.join(V3_DIR, "Notul")
+            os.makedirs(notul_dir, exist_ok=True)
+            
+            import time
+            filename = f"Notulensi_{time.strftime('%Y%m%d_%H%M%S')}.txt"
+            filepath = os.path.join(notul_dir, filename)
+            
+            with open(filepath, "w", encoding="utf-8") as f:
+                f.write(cleaned_text)
+                
+            print(f"[v3] Notulensi berhasil disimpan ke: {filepath}")
+            # Add message to UI via signal/invoke since we are in a thread
+            # Simplest is just printing since TTS and UI are busy or we can just chat
+            # We'll use a delayed UI update if possible, but print is enough.
+        except Exception as e:
+            print(f"[v3] Gagal merapikan notulensi: {e}")
+
     # ════════════════════════════════════════════════════════
     #  LANGCHAIN PIPELINE EXECUTION
     # ════════════════════════════════════════════════════════
     def _process_pipeline(self, prompt: str):
+        self._stt_thread.set_processing(True)  # Block mic input
         self._add_chat("System", "Thinking (LangChain)...", is_user=False)
         try:
             if not getattr(self, "lc_agent", None):
@@ -838,6 +909,8 @@ class ZeroTouchV3(QMainWindow):
         except Exception as e:
             print(f"[LangChain] Error: {e}")
             self._add_chat("System", f"Agent Error: {e}", is_user=False)
+        finally:
+            self._stt_thread.set_processing(False)  # Unblock mic input
 
     # ── Patient name extractor ────────────────────────────
     def _extract_patient_name(self, prompt: str) -> str:
@@ -1227,6 +1300,21 @@ class ZeroTouchV3(QMainWindow):
     # ── CLEANUP ───────────────────────────────────────────────
     def closeEvent(self, event):
         print("[v1] Shutting down…")
+        
+        # Save pending notulensi as RAW if app is closed abruptly
+        if getattr(self, "notulensi_active", False) and getattr(self, "notulensi_buffer", []):
+            print("[v3] Menyimpan notulensi yang tertunda (RAW)...")
+            notul_dir = os.path.join(V3_DIR, "Notul")
+            os.makedirs(notul_dir, exist_ok=True)
+            import time
+            filepath = os.path.join(notul_dir, f"Notulensi_RAW_{time.strftime('%Y%m%d_%H%M%S')}.txt")
+            try:
+                with open(filepath, "w", encoding="utf-8") as f:
+                    f.write("\n".join(self.notulensi_buffer))
+                print(f"[v3] RAW Notulensi diselamatkan ke: {filepath}")
+            except Exception as e:
+                print(f"[v3] Gagal menyimpan RAW notulensi: {e}")
+
         if hasattr(self, "_bridge_proc") and self._bridge_proc:
             self._bridge_proc.terminate()
             try:

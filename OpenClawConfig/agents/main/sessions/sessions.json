@@ -1,7 +1,7 @@
 {
   "agent:main:main": {
     "sessionId": "1699e45a-c0bb-46e5-afc5-dc9feeb2c9c3",
-    "updatedAt": 1781796728204,
+    "updatedAt": 1781800361851,
     "systemSent": true,
     "abortedLastRun": false,
     "chatType": "direct",
@@ -26,8 +26,8 @@
       "resolvedSkills": [],
       "version": 0
     },
-    "status": "done",
-    "startedAt": 1781796671272,
+    "status": "failed",
+    "startedAt": 1781800332372,
     "totalTokensFresh": true,
     "modelProvider": "ollama",
     "model": "llama3.1",
@@ -278,10 +278,10 @@
     "estimatedCostUsd": 0,
     "totalTokens": 8921,
     "lastTo": "heartbeat",
+    "endedAt": 1781800335618,
+    "runtimeMs": 3246,
     "authProfileOverride": "ollama:default",
     "authProfileOverrideSource": "auto",
-    "authProfileOverrideCompactionCount": 0,
-    "endedAt": 1781796728127,
-    "runtimeMs": 56855
+    "authProfileOverrideCompactionCount": 0
   }
 }
