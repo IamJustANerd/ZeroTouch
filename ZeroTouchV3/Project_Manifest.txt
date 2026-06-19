@@ -1,0 +1,62 @@
+Project Manifest
+1. Project Overview & Scope
+Objective: ZeroTouch is an intelligent, offline-first, non-contact interface designed for surgical environments. Its primary goal is to allow doctors to interact with Electronic Medical Records (EMR) and operate digital medical imaging tools without breaking the sterile field, thereby minimizing the risk of cross-contamination (fomites).
+
+Core Features:
+
+Hand Gesture Control: Uses camera input to control cursor movement, left-clicks, drag-and-drop, and zoom/scroll actions natively without physical peripherals.
+Voice Activation (STT): Always-listening wake-word detection ("Hey Jarvis") that transitions the system from SLEEP to WAKE state.
+Local LLM-powered RAG: Retrieval-Augmented Generation to dynamically fetch, read, and summarize patient records from PDFs via semantic search.
+Isolated Application Launching: Safely opens Windows host applications (Word, WhatsApp, Notepad) and specific medical files from an isolated agent environment.
+Clinical Notulensi: Background transcription recording and summarization of the doctor's speech during procedures.
+2. Tech Stack & Infrastructure
+Languages:
+
+Python (Core Logic, ML, UI)
+JavaScript/Node.js (OpenClaw Gateway environment)
+Frameworks & Major Libraries:
+
+Agent Pipeline: LangChain, LangGraph (create_react_agent), langchain-core, langchain-ollama.
+Computer Vision: OpenCV, MediaPipe (Landmarks), TensorFlow Lite (Custom Gesture Classification).
+Voice/Audio: faster-whisper (STT), openwakeword (Wake detection), sounddevice.
+UI & Hardware Control: PyQt6 (Transparent overlay UI), PyAutoGUI (Native zoom/screen manipulation), OS ctypes (Low-latency mouse hooks).
+RAG Backend: ChromaDB (Vector DB), sentence-transformers (paraphrase-multilingual-MiniLM-L12-v2), pypdf.
+Databases & AI Models:
+
+Local Ollama running llama3.1 and llama3.2:latest (Port 11434).
+ChromaDB (Persistent vector embeddings).
+Infrastructure & Deployment:
+
+100% Offline/Edge Computing deployment on Windows Host.
+Docker container running the OpenClaw Gateway (Port 18789).
+Docker-to-Host networking (host.docker.internal) configured to bridge the Linux-based Gateway to the Windows host LLM and applications.
+3. System Architecture
+The system operates as a modular orchestration of independent threads and bridges:
+
+Unified Launcher (zerotouch_v3.py): The central orchestrator providing a transparent, non-intrusive PyQt6 UI overlay. It manages application state (WAKE/SLEEP) and visualizes STT logs and AI responses.
+Agentic Pipeline (langchain_agent.py): A LangGraph ReAct agent acting as the "Brain". It receives processed STT strings, determines intent, and triggers callbacks for 8 distinct tools (App launching, RAG querying, Notulensi, Zooming, etc.).
+Voice/STT Engine: Runs in a dedicated background thread. It applies strict audio input blocking (using a 'processing' flag) during LLM inference and TTS playback to prevent input overlap and audio feedback loops.
+Hand Gesture Engine (hand_tracker.py): Processes camera frames asynchronously. Applies Exponential Moving Average (EMA) for smooth cursor tracking and utilizes a clutch mechanism to prevent accidental triggers.
+EMR RAG Engine (emr_rag.py): An isolated semantic search module that indexes all patient PDFs on startup into a local ChromaDB collection using cosine similarity.
+OpenClaw Gateway & Host Bridge (host_bridge_v3.py / SOUL.md configs): A secure WebSocket bridge that intercepts tool calls from the Docker container (e.g., windows-launcher-run) and securely executes them on the Windows host, bypassing Linux exec constraints.
+4. Key Changes & Development Timeline
+V0/V1 (Legacy): Established the base STT -> LLM -> TTS pipeline using manual, hardcoded bridge patterns. Focused on STT state management, preventing transcription hallucinations, and implementing basic wake-word persistent memory.
+V2 (Infrastructure Migration): Transitioned from legacy bridging to a native OpenClaw V2 architecture. Solved major Gateway connectivity errors, configured Docker-to-host networking (fetch failed resolutions), and established secure WebSocket authentication (identity signing).
+V3 (Agentic Optimization): Finalized the autonomous LangChain ReAct pipeline. Deprecated legacy chains. Implemented forced window focus and native hardware-level PyAutoGUI Zoom In/Out controls. Stabilized the audio loop by fixing STT thread concurrency issues.
+5. Final Technical Decisions
+100% Local / Air-Gapped Strategy: Chose local Ollama (Llama 3.2), Whisper, and ChromaDB over cloud providers (like OpenAI or Pinecone). This was a crucial architectural decision to ensure strict compliance with HIPAA/Permenkes data privacy laws. Camera frames for gesture tracking are explicitly overwritten in RAM and never saved to disk.
+LangGraph ReAct over Manual Chaining: Chose LangGraph to orchestrate tool-calling. This prevents smaller models (Llama 3.1) from hallucinating raw JSON outputs by enforcing strict SystemMessage personas and controlled tool execution callbacks.
+Interceptor Bridge over Subprocess Exec: Because the Agent runs inside a Linux Docker container while target apps (Word, WhatsApp) live on Windows, using standard exec shell commands was impossible. The decision to use a custom windows-launcher-run WebSocket bridge solved the cross-OS isolation barrier safely.
+Hardware-Level Controls (PyAutoGUI/ctypes) over Software Hooks: Chose to simulate raw hardware input for clicking and zooming rather than attempting to hook into third-party medical imaging software APIs, ensuring universal compatibility across any DICOM viewer.
+6. Current State & Known Limitations
+Working Perfectly:
+
+Wake-word detection and edge STT transcription.
+Offline EMR RAG semantic search and chunking.
+Transparent PyQt6 UI state overlay.
+Agentic tool calling for Windows app launching and background Notulensi (recording).
+Known Bugs & Limitations:
+
+STT Noise Handling: The STT engine frequently captures filler words ("um", "uh") or stutters. The system currently relies heavily on the LLM's system prompt (SOUL.md instructions) to actively ignore these rather than filtering them out at the audio-processing level.
+Gateway Network Fragility: Docker-to-host fetch failed connection errors can still occur if the local Ollama service is slow to respond or if host.docker.internal DNS fails to resolve properly inside the container.
+Audio Concurrency: While processing flags mitigate feedback, rapid transitions between STT transcription and TTS playback still carry a minor risk of audio overlap if threads desynchronize. Future optimization is required on the STT watchdog timer.

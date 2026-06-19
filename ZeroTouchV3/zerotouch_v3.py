@@ -337,7 +337,7 @@ class STTThread(QThread):
                                 vad_parameters=dict(min_silence_duration_ms=400, threshold=0.5),
                                 condition_on_previous_text=False,
                                 no_speech_threshold=WHISPER_NO_SPEECH_THRESH,
-                                # initial_prompt="percakapan, bahasa indonesia, kata formal, kata informal, kalimat valid",
+                                initial_prompt="perbesar, perkecil, zoom, buka, tutup, geser, pasien, scan, gambar, atas, bawah, kiri, kanan",
                             )
                             # ── Layer 2b: Per-segment no_speech_prob filter ───────────────
                             # Whisper exposes no_speech_prob on each segment.  Drop any
@@ -753,6 +753,11 @@ class ZeroTouchV3(QMainWindow):
             return  # already asleep, nothing to do
         if self._last_voice_activity == 0.0:
             return  # clock not started yet
+        # FIX: Jangan tidur selama notulensi aktif — dokter butuh jeda antar kalimat
+        if getattr(self, 'notulensi_active', False):
+            self._last_voice_activity = time.time()  # terus perpanjang timer
+            self._stt_bar.setText("STT: Notulensi aktif — mendengarkan...")
+            return
         elapsed = time.time() - self._last_voice_activity
         # Show countdown in the STT bar when getting close to timeout
         remaining = VOICE_WAKE_TIMEOUT - elapsed
@@ -782,10 +787,6 @@ class ZeroTouchV3(QMainWindow):
             print(f"[v3] Transcription dropped (system is processing): {clean!r}")
             return
 
-        # ── Record to Notulensi if active ─────────────────────
-        if self.notulensi_active:
-            self.notulensi_buffer.append(clean)
-
         self._stt_overlay.update_transcription(clean)
         text_lower = clean.lower()
 
@@ -811,6 +812,31 @@ class ZeroTouchV3(QMainWindow):
         if self._voice_wake or is_ptt:
             self._last_voice_activity = time.time()  # reset inactivity clock on every real command
             self._add_chat("You (voice)", clean, is_user=True)
+
+            # ── FIX: Notulensi mode intercept ──────────────────────────
+            # Jika notulensi aktif, periksa dulu apakah ini perintah stop.
+            # Jika bukan, catat ke buffer dan langsung jawab "sudah dicatat".
+            # Jangan kirim ke LLM supaya tidak salah diinterpretasikan sebagai perintah.
+            if self.notulensi_active:
+                stop_notul_variants = [
+                    "berhenti notulensi", "stop notulensi", "hentikan notulensi",
+                    "selesai notulensi", "akhiri notulensi", "notulensi selesai",
+                    "notulensi berhenti", "notulensi dihentikan", "noturansi",
+                    "hentikan rekam", "stop rekam", "berhenti rekam",
+                ]
+                if any(v in text_lower for v in stop_notul_variants):
+                    # Ini perintah stop — kirim ke LangChain untuk eksekusi berhenti_notulensi()
+                    threading.Thread(
+                        target=self._process_pipeline, args=(clean,), daemon=True
+                    ).start()
+                else:
+                    # Ini diktat notulensi — catat ke buffer dan acknowledge singkat
+                    self.notulensi_buffer.append(clean)
+                    self._add_chat("Notulensi", f"📝 {clean}", is_user=False)
+                    self._speak("Baik, sudah dicatat.")
+                return
+            # ── End notulensi intercept ─────────────────────────────────
+
             threading.Thread(
                 target=self._process_pipeline, args=(clean,), daemon=True
             ).start()
@@ -857,7 +883,7 @@ class ZeroTouchV3(QMainWindow):
         print(f"[v3] Merapikan notulensi ({len(buffer_list)} baris)...")
         raw_text = "\n".join(buffer_list)
         
-        from langchain_community.chat_models import ChatOllama
+        from langchain_ollama import ChatOllama
         from langchain_core.messages import HumanMessage
         llm = ChatOllama(model="llama3.1:latest", temperature=0, base_url="http://127.0.0.1:11434")
         
@@ -1209,6 +1235,9 @@ class ZeroTouchV3(QMainWindow):
                 " border-radius: 8px; padding: 2px 8px;"
             )
             self._stt_overlay.update_state("STT: Waiting for 'Hello Zero Touch'...", "#00FFFF")
+            self._session_history = []
+            if getattr(self, "lc_agent", None):
+                self.lc_agent.session_history = []
 
     # ── PTT ───────────────────────────────────────────────────
     def _on_ptt_pressed(self):

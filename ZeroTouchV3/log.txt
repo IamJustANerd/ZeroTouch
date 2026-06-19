@@ -1,0 +1,64 @@
+PS E:\OpenclawMainFolder\zerotouchv3> python zerotouch_v3.py
+[v3] Started host_bridge_v3.py on port 5003
+==================================================
+  ZeroTouch V3  —  Host Bridge
+  Listening on  http://0.0.0.0:5003
+  Allowed apps: word, winword, excel, powerpoint, notepad, explorer, photos, chrome, edge, file
+  Endpoints:    /run  /screen  /rag  /health
+==================================================
+ * Serving Flask app 'host_bridge_v3'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5003
+ * Running on http://192.168.68.118:5003
+Press CTRL+C to quit
+[v3] LangChain Agent initialized.
+[stt] Loading Whisper model…
+[stt] Loading wake-word model…
+[stt] Ready.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1781888040.216042    8052 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.       
+W0000 00:00:1781888040.236165    8052 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.       
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+[rag] Loading multilingual embedding model…
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights: 100%|███████████████████████████████████| 199/199 [00:00<00:00, 3466.21it/s]
+W0000 00:00:1781888045.212594    6020 landmark_projection_calculator.cc:81] Using NORM_RECT without IMAGE_DIMENSIONS is only supported for the square ROI. Provide IMAGE_DIMENSIONS or use PROJECTION_MATRIX.
+[rag]   Indexed: Agus Setiawan
+[rag]   Indexed: Budi Santoso
+[rag]   Indexed: Siti Aminah
+[rag] Ready — 10 chunks across 3 patients.
+[stt] Transcribed: 'tolong mulai lakukan notulensi'  (peak_rms=0.3916)
+[v1] Voice wake timeout after 16s of inactivity.
+
+[LangChain Tool] 📝 Executing: mulai_notulensi()
+[v3] Notulensi started.
+Original Text: "Baik, notulensi telah dimulai."
+Synthesizing (Phonetic): "Baik, notulensi telah dimulai."
+✅ Audio successfully saved to: tts_v1_154c23.wav
+[v1] Voice wake timeout after 16s of inactivity.
+[stt] Transcribed: 'sekarang tolong dicatat bahwa pasien ini data hasil scan jantungnya salah, jadi harus dikonsultasi ulang'  (peak_rms=0.3643)
+[stt] Transcribed: 'data jantung pasien ini hasilnya salah, jadi harus dikonsultasi ulang'  (peak_rms=0.3530)
+
+[LangChain Tool] 🧠 Executing: buka_info_pasien(pertanyaan='data rekam medis pasien')
+Original Text: "Maaf, saya tidak menemukan data jantung pasien yang Anda maksud. Silakan memberikan lebih banyak informasi atau klarifikasi tentang pasien tersebut agar saya dapat membantu dengan lebih efektif."
+Synthesizing (Phonetic): "Maaf, saya tidak menemukan dei ta jantung pasien yang Anda maksud. Silakan memberikan lebih banyak informasi atau klarifikasi tentang pasien tersebut agar saya dapat membantu dengan lebih efektif."
+[v1] Voice wake timeout after 16s of inactivity.
+✅ Audio successfully saved to: tts_v1_c8414c.wav
+[stt] Skipped (peak RMS 0.0002 < 0.015) — no real speech detected.
+[stt] Transcribed: ''  (peak_rms=0.0002)
+[v1] Empty transcription ignored: '(nothing heard)'
+[v1] Voice wake timeout after 16s of inactivity.
+[stt] Transcribed: 'tolong dicatak di notulensi bahwa data pasien ini salah dan selain itu pasien ini juga butuh obat dari 3 resep untuk terbeda'  (peak_rms=0.4697)
+[stt] Transcribed: 'tolong dicatat bahwa pasien ini datanya salah, selain itu dia juga butuh resep dokter'  (peak_rms=0.3665)
+
+[LangChain Tool] 🧠 Executing: buka_info_pasien(pertanyaan='data pasien siapa yang ingin Anda buka?')
+[v1] Voice wake timeout after 15s of inactivity.
+Original Text: "Maaf, saya tidak bisa menemukan informasi tentang pasien mana yang ingin Anda buka. Silakan memberi tahu saya nama pasien atau nomor rekam medisnya agar saya dapat membantu dengan lebih spesifik."
+Synthesizing (Phonetic): "Maaf, saya tidak bisa menemukan informasi tentang pasien mana yang ingin Anda buka. Silakan memberi tahu saya nama pasien atau nomor rekam medisnya agar saya dapat membantu dengan lebih spesifik."
+✅ Audio successfully saved to: tts_v1_6db0a4.wav
+[v1] Shutting down…
+[v3] Menyimpan notulensi yang tertunda (RAW)...
+[v3] RAW Notulensi diselamatkan ke: E:\OpenclawMainFolder\zerotouchv3\Notul\Notulensi_RAW_20260619_235840.txt
+PS E:\OpenclawMainFo
