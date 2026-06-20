@@ -1,0 +1,4 @@
+helosirotox, sekarang tolong tambahkan ini ke catatan otolensinya pasien ini kondisinya tidak sesuai dengan yang ada di medical record, sehingga harus diminta konsultasi ulang
+selain itu tolong ditambahkan kecatotannya juga bahwa pasien ini memerlukan 3 jenis obat yaitu parasitamol, parasitimol sama parasotomol dengan masing-masing 500 mg
+untuk lensinya bisa dihantikan
+masuka slip state

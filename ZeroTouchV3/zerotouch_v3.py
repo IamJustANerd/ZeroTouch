@@ -132,14 +132,14 @@ APP_KEYWORDS = {
 #  GESTURE THREAD  (identical to v0)
 # ════════════════════════════════════════════════════════════════
 class GestureThread(QThread):
-    frame_ready     = pyqtSignal(np.ndarray, str, float, str, float)
+    frame_ready     = pyqtSignal(np.ndarray, str, float, str, float, bool)
     wake_requested  = pyqtSignal()
     sleep_requested = pyqtSignal()
 
     def __init__(self):
         super().__init__()
         self._running = False
-        self._fist_hold_start = None
+        self._no_hand_hold_start = None  # Replaces _fist_hold_start
 
     def run(self):
         try:
@@ -152,17 +152,27 @@ class GestureThread(QThread):
         self._engine.run()
 
     def _cb(self, img, state, progress, mlp_gest, fps):
-        self.frame_ready.emit(img, state, progress, mlp_gest, fps)
         if state == "ACTIVE":
             self.wake_requested.emit()
-        if mlp_gest == "Fist":
-            if self._fist_hold_start is None:
-                self._fist_hold_start = time.time()
-            elif time.time() - self._fist_hold_start >= SLEEP_GESTURE_HOLD:
+            
+        sleep_progress = 0.0
+        # Trigger sleep when no hand (or unrecognised gesture) is held for SLEEP_GESTURE_HOLD seconds.
+        # Previously this used "Fist" gesture; now it uses absence-of-hand / unknown gesture.
+        if mlp_gest in ("No Hand", "Unknown"):
+            if self._no_hand_hold_start is None:
+                self._no_hand_hold_start = time.time()
+            elif time.time() - self._no_hand_hold_start >= SLEEP_GESTURE_HOLD:
                 self.sleep_requested.emit()
-                self._fist_hold_start = None
+                self._no_hand_hold_start = None
+            else:
+                sleep_progress = (time.time() - self._no_hand_hold_start) / SLEEP_GESTURE_HOLD
         else:
-            self._fist_hold_start = None
+            self._no_hand_hold_start = None
+            
+        is_sleep = sleep_progress > 0.0
+        final_progress = sleep_progress if is_sleep else progress
+        
+        self.frame_ready.emit(img, state, final_progress, mlp_gest, fps, is_sleep)
 
     def set_active(self, active: bool):
         if hasattr(self, "_engine"):
@@ -609,6 +619,16 @@ class ZeroTouchV3(QMainWindow):
         )
         root.addWidget(self._gest_pill)
 
+        # Gesture Progress Bar
+        self._gest_prog_bar = QFrame()
+        self._gest_prog_bar.setFixedHeight(4)
+        self._gest_prog_bar.setStyleSheet("background: #222222;")
+        self._gest_prog_level = QFrame(self._gest_prog_bar)
+        self._gest_prog_level.setGeometry(0, 0, 0, 4)
+        self._gest_prog_level.setStyleSheet("background: #00FF00;")
+        self._gest_prog_level.hide()
+        root.addWidget(self._gest_prog_bar)
+
         # Chat log
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
@@ -683,7 +703,7 @@ class ZeroTouchV3(QMainWindow):
         self._stt_thread.start()
 
     # ── GESTURE CALLBACKS ─────────────────────────────────────
-    def _on_frame(self, cv_img, state, progress, mlp_gest, fps):
+    def _on_frame(self, cv_img, state, progress, mlp_gest, fps, is_sleep=False):
         try:
             import cv2
             rgb = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
@@ -694,6 +714,21 @@ class ZeroTouchV3(QMainWindow):
         except Exception:
             pass
         self._gest_pill.setText(f"Gesture: {mlp_gest}  |  Clutch: {state}  |  FPS: {int(fps)}")
+        
+        # Only show sleep progress if we are currently awake
+        if is_sleep and not getattr(self, '_gest_wake', False):
+            progress = 0.0
+            
+        width_ratio = min(max(progress, 0.0), 1.0)
+        bar_width = int(self._gest_prog_bar.width() * width_ratio)
+        
+        if progress > 0.0:
+            color = "#FF4444" if is_sleep else "#00FF00"
+            self._gest_prog_level.setGeometry(0, 0, bar_width, 4)
+            self._gest_prog_level.setStyleSheet(f"background: {color};")
+            self._gest_prog_level.show()
+        else:
+            self._gest_prog_level.hide()
 
     def _on_gesture_wake(self):
         if not self._gest_wake:
@@ -703,7 +738,7 @@ class ZeroTouchV3(QMainWindow):
     def _on_gesture_sleep(self):
         if self._gest_wake:
             self._set_gest_wake(False)
-            self._add_chat("System", "Gesture Asleep (Fist hold).", is_user=False)
+            self._add_chat("System", "Gesture Asleep (No Hand / Unknown hold).", is_user=False)
 
     # ── STT CALLBACKS ─────────────────────────────────────────
     def _on_stt_wake(self):
