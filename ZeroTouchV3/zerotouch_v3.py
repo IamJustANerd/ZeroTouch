@@ -502,10 +502,20 @@ class ZeroTouchV3(QMainWindow):
         # Short-term memory for the LLM during a single WAKE session.
         # Cleared when voice goes to SLEEP.
         self._session_history = []
-        
+
         # State Notulensi
         self.notulensi_active = False
         self.notulensi_buffer = []
+
+        # ── System readiness gate ─────────────────────────────────────
+        # Voice recognition is LOCKED until all three subsystems are ready:
+        #   • RAG  : emr_rag.is_ready() returns True
+        #   • STT  : Whisper model loaded (first status_changed signal from STTThread)
+        #   • TTS  : tts_piper module importable (checked once at startup)
+        self._system_ready   = False   # master gate — blocks all voice input
+        self._rag_ready      = False
+        self._stt_ready      = False   # set True after first IDLE signal from STTThread
+        self._tts_ready      = False   # set True after TTS import check passes
 
         # Auto-start host_bridge_v3.py (port 5003)
         try:
@@ -519,6 +529,12 @@ class ZeroTouchV3(QMainWindow):
             self._bridge_proc = None
 
         self._stt_overlay = STTOverlayWindow()
+
+        # Show loading banner immediately — voice recognition is NOT yet active.
+        self._stt_overlay.update_state(
+            "⏳ Sistem sedang loading, harap tunggu sebentar…", "#FFB300"
+        )
+
         emr_rag.initialize()
         self._setup_agent()
 
@@ -535,6 +551,12 @@ class ZeroTouchV3(QMainWindow):
         self._wake_timer = QTimer(self)
         self._wake_timer.timeout.connect(self._check_voice_wake_timeout)
         self._wake_timer.start(1000)
+
+        # Readiness polling timer — checks all three subsystems every 500 ms.
+        # Stops itself once _system_ready is True.
+        self._ready_timer = QTimer(self)
+        self._ready_timer.timeout.connect(self._poll_system_ready)
+        self._ready_timer.start(500)
 
     # ── UI SETUP ──────────────────────────────────────────────
     def _setup_ui(self):
@@ -699,6 +721,9 @@ class ZeroTouchV3(QMainWindow):
         self._stt_thread.wake_detected.connect(self._on_stt_wake)
         self._stt_thread.transcription_ready.connect(self._on_transcription)
         self._stt_thread.status_changed.connect(self._on_stt_status)
+        # _on_stt_first_ready marks STT as loaded the FIRST time the thread
+        # emits status_changed("IDLE") — meaning Whisper model is fully loaded.
+        self._stt_thread.status_changed.connect(self._on_stt_first_ready)
         self._stt_thread.mic_volume.connect(self._update_mic_volume)
         self._stt_thread.start()
 
@@ -740,8 +765,69 @@ class ZeroTouchV3(QMainWindow):
             self._set_gest_wake(False)
             self._add_chat("System", "Gesture Asleep (No Hand / Unknown hold).", is_user=False)
 
+    # ── SYSTEM READINESS GATE ─────────────────────────────────
+    def _on_stt_first_ready(self, status: str):
+        """Called every time STTThread emits status_changed.
+        We only care about the *first* IDLE — that means Whisper has loaded."""
+        if status == "IDLE" and not self._stt_ready:
+            self._stt_ready = True
+            print("[v3] ✅ STT ready (Whisper model loaded).")
+
+    def _poll_system_ready(self):
+        """Checks RAG, STT, and TTS readiness every 500 ms.
+        Once all are ready, fires the 'Sistem sudah siap' announcement
+        and unlocks voice recognition."""
+        if self._system_ready:
+            self._ready_timer.stop()
+            return
+
+        # ── Check RAG ──
+        if not self._rag_ready and emr_rag.is_ready():
+            self._rag_ready = True
+            print("[v3] ✅ RAG ready.")
+
+        # ── Check TTS ──
+        if not self._tts_ready:
+            try:
+                from tts_piper import synthesize_indonesian  # noqa: F401
+                self._tts_ready = True
+                print("[v3] ✅ TTS ready (tts_piper importable).")
+            except ImportError:
+                pass  # still loading, retry next tick
+
+        # ── All three ready? ──
+        if self._rag_ready and self._stt_ready and self._tts_ready:
+            self._system_ready = True
+            self._ready_timer.stop()
+            print("[v3] 🚀 Semua sistem siap — voice recognition diaktifkan.")
+
+            # Update UI overlay to normal idle state
+            self._stt_overlay.update_state(
+                "STT: Waiting for 'Hello Zero Touch'…", "#00FFFF"
+            )
+            self._stt_bar.setText("STT: Sistem siap — ucapkan 'Halo Zero Touch'")
+            self._add_chat("System", "✅ Semua sistem siap. Voice recognition aktif.", is_user=False)
+
+            # Announce readiness via TTS
+            self._speak("Sistem sudah siap")
+        else:
+            # Keep the loading banner updated with what's still pending
+            pending = []
+            if not self._rag_ready:
+                pending.append("RAG")
+            if not self._stt_ready:
+                pending.append("STT")
+            if not self._tts_ready:
+                pending.append("TTS")
+            banner = "⏳ Sistem sedang loading: " + ", ".join(pending) + "…"
+            self._stt_overlay.update_state(banner, "#FFB300")
+
     # ── STT CALLBACKS ─────────────────────────────────────────
     def _on_stt_wake(self):
+        # Block wake-word if system is not fully ready yet
+        if not self._system_ready:
+            print("[v3] Wake word ignored — system not ready yet.")
+            return
         if not self._voice_wake:
             self._set_voice_wake(True)
             self._add_chat("System", "Voice Woken (Hello Zero Touch).", is_user=False)
@@ -763,7 +849,7 @@ class ZeroTouchV3(QMainWindow):
             self._stt_overlay.update_state("⏳ Transcribing...", "#FF8C00")
         elif status == "IDLE":
             if self._voice_wake:
-                self._stt_overlay.update_state("🟢 Voice Awake (Listening...)", "#44FF88")
+                self._stt_overlay.update_state("🟢 Processing...", "#44FF88")
             else:
                 self._stt_overlay.update_state("STT: Waiting for 'Hello Zero Touch'...", "#00FFFF")
         c = colors.get(status, "white")
@@ -808,6 +894,11 @@ class ZeroTouchV3(QMainWindow):
         is_ptt = getattr(self, "_last_was_ptt", False)
         self._last_was_ptt = False
 
+        # ── Guard: block ALL input until system is fully ready ─
+        if not self._system_ready:
+            print(f"[v3] Transcription blocked — system not ready yet: {text!r}")
+            return
+
         # ── Guard: ignore empty / noise-only results ──────────
         # Whisper sometimes returns an empty string or "(nothing heard)" when
         # there was silence or mic noise. Sending these to the LLM causes it
@@ -816,7 +907,7 @@ class ZeroTouchV3(QMainWindow):
         if not clean or clean == "(nothing heard)":
             print(f"[v1] Empty transcription ignored: {text!r}")
             return
-            
+
         # ── Guard: Block if already processing ────────────────
         if getattr(self._stt_thread, "_processing", False):
             print(f"[v3] Transcription dropped (system is processing): {clean!r}")
