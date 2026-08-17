@@ -3,14 +3,14 @@ zerotouch_v1.py  –  Zero Touch v1  (OpenClaw Edition)
 =======================================================
 Upgrades v0's hardcoded keyword pipeline to a full agentic pipeline:
 
-  Voice → Whisper STT → Llama 3.1 (OpenClaw) → tool / answer
+  Voice → Whisper STT → llama 3.2 (OpenClaw) → tool / answer
                                               ↓
                                     Llama 3.2 (voice formatter)
                                               ↓
                                           TTS playback
 
 New pipeline (vs v0):
-  • No APP_KEYWORDS dict — Llama 3.1 understands intent naturally.
+  • No APP_KEYWORDS dict — llama 3.2 understands intent naturally.
   • Supports advanced commands: "zoom in top-right 2x", "open excel", etc.
   • Llama 3.2 role changed: voice-formatter only (short, natural Indonesian).
   • Tool execution + TTS generation run in parallel (concurrent.futures).
@@ -26,6 +26,8 @@ Pre-flight check (run first):
 
 import sys
 import os
+import multiprocessing
+
 import time
 import threading
 import queue
@@ -39,6 +41,10 @@ os.environ["PYTHONIOENCODING"]          = "utf-8"
 os.environ["TF_CPP_MIN_LOG_LEVEL"]      = "3"
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
 os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
+# Bypass SSL errors for faster-whisper model downloads on restricted networks
+os.environ["CURL_CA_BUNDLE"] = ""
+# os.environ["HF_ENDPOINT"] = "https://hf-mirror.com" # Uncomment if HF is completely blocked
+
 logging.getLogger("huggingface_hub").setLevel(logging.ERROR)
 warnings.filterwarnings("ignore")
 
@@ -46,12 +52,17 @@ import numpy as np
 import requests
 
 # ── Path resolution ───────────────────────────────────────────────
-# zerotouch_v1.py lives in ZeroTouchV1/, so ROOT is one level up
-V3_DIR  = os.path.dirname(os.path.abspath(__file__))
-ROOT    = os.path.dirname(V3_DIR)
-
-ZEROTOUCH_DIR = os.path.join(ROOT, "ZeroTouch")
-STT_DIR       = os.path.join(ROOT, "VoiceSetting", "zerotouch_voicerecognition")
+if getattr(sys, 'frozen', False):
+    V3_DIR = sys._MEIPASS
+    ROOT = V3_DIR
+    ZEROTOUCH_DIR = V3_DIR
+    STT_DIR = V3_DIR
+else:
+    # zerotouch_v1.py lives in ZeroTouchV1/, so ROOT is one level up
+    V3_DIR  = os.path.dirname(os.path.abspath(__file__))
+    ROOT    = os.path.dirname(V3_DIR)
+    ZEROTOUCH_DIR = os.path.join(ROOT, "ZeroTouch")
+    STT_DIR       = os.path.join(ROOT, "VoiceSetting", "zerotouch_voicerecognition")
 
 sys.path.insert(0, V3_DIR)
 sys.path.insert(0, ROOT)
@@ -1011,7 +1022,7 @@ class ZeroTouchV3(QMainWindow):
         
         from langchain_ollama import ChatOllama
         from langchain_core.messages import HumanMessage
-        llm = ChatOllama(model="llama3.1:latest", temperature=0, base_url="http://127.0.0.1:11434")
+        llm = ChatOllama(model="llama3.2:latest", temperature=0, base_url="http://127.0.0.1:11434")
         
         prompt = (
             "Berikut adalah hasil transkripsi kasar dari ucapan seorang dokter selama pemeriksaan:\n\n"
@@ -1240,7 +1251,7 @@ class ZeroTouchV3(QMainWindow):
     def _llm_tts_worker(self, text: str, already_processed: bool = False,
                         prefetched_rag: str = None):
         """
-        already_processed=True  → text is Llama 3.1's answer; just polish it for voice.
+        already_processed=True  → text is llama 3.2's answer; just polish it for voice.
         already_processed=False → raw user prompt; use prefetched_rag if available,
                                    otherwise run a fresh RAG query (fallback mode).
         prefetched_rag          → RAG context already fetched by _openclaw_pipeline;
@@ -1292,7 +1303,7 @@ class ZeroTouchV3(QMainWindow):
             if r.ok:
                 response_text = r.json().get("response", "").strip()
                 self._add_chat("Jarvis", response_text, is_user=False)
-                # If this wasn't already processed by Llama 3.1, store it in history
+                # If this wasn't already processed by llama 3.2, store it in history
                 if not already_processed:
                     self._session_history.append({"role": "assistant", "content": response_text})
                 self._tts_worker(response_text)
@@ -1487,6 +1498,21 @@ class ZeroTouchV3(QMainWindow):
 #  ENTRY POINT
 # ════════════════════════════════════════════════════════════════
 if __name__ == "__main__":
+    # ── MUST be the very first call inside __main__ for PyInstaller on Windows ──
+    # Without this, every multiprocessing worker process re-runs the whole app,
+    # spawning an infinite cascade of processes that freezes the machine.
+    multiprocessing.freeze_support()
+
+    import signal
+
+    def _emergency_shutdown(sig, frame):
+        """Ctrl+C / SIGTERM: kill the whole process group immediately."""
+        print("\n[v3] Emergency shutdown triggered — killing all threads.")
+        os._exit(1)  # Hard kill: terminates all threads instantly
+
+    signal.signal(signal.SIGINT, _emergency_shutdown)
+    signal.signal(signal.SIGTERM, _emergency_shutdown)
+
     app = QApplication(sys.argv)
     font = QFont("Inter")
     if not font.exactMatch():

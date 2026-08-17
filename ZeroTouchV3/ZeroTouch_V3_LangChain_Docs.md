@@ -10,7 +10,7 @@ Sistem V3 sudah tidak menggunakan rantai (chains) lawas, melainkan menggunakan a
 1. **Core:** `langchain-core` (untuk manajemen pesan dan tools)
 2. **LLM Provider:** `langchain-ollama` (`ChatOllama`)
 3. **Agent Framework:** `langgraph` (menggunakan `create_react_agent` untuk eksekusi logika ReAct secara dinamis)
-4. **Local LLM Model:** Ollama menjalankan `llama3.1:latest` (berjalan pada port `127.0.0.1:11434` dengan temperature 0 untuk determinisme).
+4. **Local LLM Model:** Ollama menjalankan `llama3.2:latest` (berjalan pada port `127.0.0.1:11434` dengan temperature 0 untuk determinisme).
 5. **RAG Backend:** (Offline/Custom) Menggunakan `chromadb` sebagai *vector database* dan `sentence-transformers` (`paraphrase-multilingual-MiniLM-L12-v2`) untuk pemrosesan semantik dari ekstraksi teks PDF (`pypdf`).
 
 ---
@@ -38,5 +38,5 @@ AI Agent di `langchain_agent.py` dilengkapi dengan 8 buah *tools* terintegrasi y
 - Agent memelihara konteks percakapan di dalam list `session_history` (memuat objek `HumanMessage` dan `AIMessage`). Ini memungkinkan LLM tetap mengingat konteks pertanyaan atau identitas pasien sebelumnya saat berinteraksi (memori jangka pendek).
 
 **2. System Prompt Protection**
-- Agent menggunakan proteksi `SystemMessage` yang ketat agar Llama 3.1 tidak berhalusinasi mengembalikan format *raw JSON* (suatu isu umum ketika memanggil *tools* pada model Llama kecil).
+- Agent menggunakan proteksi `SystemMessage` yang ketat agar llama 3.2 tidak berhalusinasi mengembalikan format *raw JSON* (suatu isu umum ketika memanggil *tools* pada model Llama kecil).
 - Persona dipatok sebagai **"Jarvis, asisten bedah AI cerdas"** dengan panduan untuk membalas dokter menggunakan satu kalimat pendek, langsung ke inti (contoh: *"Baik, gambar telah diperbesar"*), dan menanyakan klarifikasi alih-alih membuat asumsi sendiri jika perintah dirasa kurang jelas.

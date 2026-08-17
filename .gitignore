@@ -1,0 +1,20 @@
+venv/
+__pycache__/
+*.pyc
+
+# PyInstaller files
+ZeroTouchV3/build/
+ZeroTouchV3/dist/
+ZeroTouchV3/*.spec
+*.exe
+
+# Legacy versions
+legacy_versions/
+ZeroTouchV0/
+ZeroTouchV1/
+ZeroTouchV2/
+ZeroTouch/
+
+# IDE files
+.vscode/
+.idea/

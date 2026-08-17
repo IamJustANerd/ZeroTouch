@@ -22,7 +22,13 @@ def synthesize_indonesian(text: str, output_path: str, length_scale: float = 1.0
     Runs piper as a Python module (sys.executable -m piper) so it works
     in any virtual environment without needing a hardcoded executable path.
     """
-    base_dir = os.path.dirname(__file__)
+    if getattr(sys, 'frozen', False):
+        base_dir = sys._MEIPASS
+        piper_cmd = [os.path.join(sys._MEIPASS, "piper.exe")]
+    else:
+        base_dir = os.path.dirname(__file__)
+        piper_cmd = [sys.executable, "-m", "piper"]
+
     model_path = os.path.join(base_dir, "models", "id_ID-news_tts-medium.onnx")
 
     if not os.path.exists(model_path):
@@ -36,8 +42,7 @@ def synthesize_indonesian(text: str, output_path: str, length_scale: float = 1.0
 
     try:
         subprocess.run(
-            [
-                sys.executable, "-m", "piper",
+            piper_cmd + [
                 "--model", model_path,
                 "--output_file", output_path,
                 "--length_scale", str(length_scale),

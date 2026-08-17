@@ -23,7 +23,7 @@ UI & Hardware Control: PyQt6 (Transparent overlay UI), PyAutoGUI (Native zoom/sc
 RAG Backend: ChromaDB (Vector DB), sentence-transformers (paraphrase-multilingual-MiniLM-L12-v2), pypdf.
 Databases & AI Models:
 
-Local Ollama running llama3.1 and llama3.2:latest (Port 11434).
+Local Ollama running llama3.2 and llama3.2:latest (Port 11434).
 ChromaDB (Persistent vector embeddings).
 Infrastructure & Deployment:
 
@@ -45,7 +45,7 @@ V2 (Infrastructure Migration): Transitioned from legacy bridging to a native Ope
 V3 (Agentic Optimization): Finalized the autonomous LangChain ReAct pipeline. Deprecated legacy chains. Implemented forced window focus and native hardware-level PyAutoGUI Zoom In/Out controls. Stabilized the audio loop by fixing STT thread concurrency issues.
 5. Final Technical Decisions
 100% Local / Air-Gapped Strategy: Chose local Ollama (Llama 3.2), Whisper, and ChromaDB over cloud providers (like OpenAI or Pinecone). This was a crucial architectural decision to ensure strict compliance with HIPAA/Permenkes data privacy laws. Camera frames for gesture tracking are explicitly overwritten in RAM and never saved to disk.
-LangGraph ReAct over Manual Chaining: Chose LangGraph to orchestrate tool-calling. This prevents smaller models (Llama 3.1) from hallucinating raw JSON outputs by enforcing strict SystemMessage personas and controlled tool execution callbacks.
+LangGraph ReAct over Manual Chaining: Chose LangGraph to orchestrate tool-calling. This prevents smaller models (llama 3.2) from hallucinating raw JSON outputs by enforcing strict SystemMessage personas and controlled tool execution callbacks.
 Interceptor Bridge over Subprocess Exec: Because the Agent runs inside a Linux Docker container while target apps (Word, WhatsApp) live on Windows, using standard exec shell commands was impossible. The decision to use a custom windows-launcher-run WebSocket bridge solved the cross-OS isolation barrier safely.
 Hardware-Level Controls (PyAutoGUI/ctypes) over Software Hooks: Chose to simulate raw hardware input for clicking and zooming rather than attempting to hook into third-party medical imaging software APIs, ensuring universal compatibility across any DICOM viewer.
 6. Current State & Known Limitations

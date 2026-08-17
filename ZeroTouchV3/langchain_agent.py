@@ -124,11 +124,11 @@ class ZeroTouchAgent:
         tools = [buka_aplikasi, buka_file, buka_info_pasien, buat_dan_tulis_file, buka_foto_pasien, zoom_layar, mulai_notulensi, berhenti_notulensi]
         
         # PENTING: Gunakan 127.0.0.1 untuk mencegah WinError 10049
-        llm = ChatOllama(model="llama3.1:latest", temperature=0, base_url="http://127.0.0.1:11434")
+        llm = ChatOllama(model="llama3.2", temperature=0, base_url="http://127.0.0.1:11434", num_ctx=2048)
         
         self.agent_executor = create_react_agent(llm, tools)
         
-        # System prompt yang ketat agar Llama 3.1 tidak berhalusinasi menghasilkan raw JSON
+        # System prompt yang ketat agar Llama 3.2 tidak berhalusinasi menghasilkan raw JSON
         self.system_prompt = SystemMessage(content=(
             "Anda adalah Jarvis, asisten bedah AI cerdas. Anda merespons perintah dokter melalui speaker suara. "
             "Tugas Anda: Panggil fungsi (tool) yang tepat secara internal. Jika tool berhasil dipanggil, Anda WAJIB mempercayai hasilnya dan memberikan 1 KALIMAT PENDEK konfirmasi keberhasilan ke dokter. JANGAN mengatakan Anda tidak bisa menjawab jika tool berhasil. "

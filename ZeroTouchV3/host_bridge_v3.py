@@ -7,7 +7,7 @@ Endpoints
 ---------
 POST /run     – Launch Windows apps (word, notepad, whatsapp, explorer, etc.)
 POST /screen  – Advanced screen control (zoom-in/out, mouse move, scroll, click)
-POST /rag     – Query the local EMR RAG index (for Llama 3.1 tool calls)
+POST /rag     – Query the local EMR RAG index (for llama 3.2 tool calls)
 GET  /health  – Simple liveness probe
 
 Screen Control Regions
@@ -251,7 +251,7 @@ def screen_control():
 def rag_query():
     """
     Expose the local EMR RAG index over HTTP.
-    Called by zerotouch_v1.py directly, or potentially by Llama 3.1 as a tool.
+    Called by zerotouch_v1.py directly, or potentially by llama 3.2 as a tool.
     """
     try:
         import emr_rag
