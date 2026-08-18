@@ -18,3 +18,5 @@ ZeroTouch/
 # IDE files
 .vscode/
 .idea/
+
+voice-model/

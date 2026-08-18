@@ -129,6 +129,9 @@ def main() -> None:
     )
     print("✅ STT model ready.")
 
+    print("⏳ Checking and downloading wake-word models if necessary...")
+    import openwakeword
+    openwakeword.utils.download_models()
     print("⏳ Loading wake word model (openwakeword)...")
     oww_model = WakeWordModel(
         wakeword_models=[WAKE_WORD_MODEL],

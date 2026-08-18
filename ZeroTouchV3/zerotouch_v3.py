@@ -249,6 +249,9 @@ class STTThread(QThread):
         print("[stt] Loading Whisper model…")
         stt = WhisperModel(STT_MODEL_SIZE, device=STT_DEVICE,
                            compute_type=STT_COMPUTE, cpu_threads=STT_THREADS)
+        print("[stt] Checking and downloading wake-word models if necessary…")
+        import openwakeword
+        openwakeword.utils.download_models()
         print("[stt] Loading wake-word model…")
         oww = WakeWordModel(wakeword_models=[WAKE_WORD_MODEL],
                             inference_framework="onnx")
