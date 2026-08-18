@@ -39,6 +39,8 @@ import concurrent.futures
 
 os.environ["PYTHONIOENCODING"]          = "utf-8"
 os.environ["TF_CPP_MIN_LOG_LEVEL"]      = "3"
+os.environ["TF_ENABLE_ONEDNN_OPTS"]     = "0"
+os.environ["GLOG_minloglevel"]          = "3"
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
 os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
 # Bypass SSL errors for faster-whisper model downloads on restricted networks
@@ -46,6 +48,7 @@ os.environ["CURL_CA_BUNDLE"] = ""
 # os.environ["HF_ENDPOINT"] = "https://hf-mirror.com" # Uncomment if HF is completely blocked
 
 logging.getLogger("huggingface_hub").setLevel(logging.ERROR)
+logging.getLogger("pypdf").setLevel(logging.ERROR)
 warnings.filterwarnings("ignore")
 
 import numpy as np
@@ -61,7 +64,7 @@ else:
     # zerotouch_v1.py lives in ZeroTouchV1/, so ROOT is one level up
     V3_DIR  = os.path.dirname(os.path.abspath(__file__))
     ROOT    = os.path.dirname(V3_DIR)
-    ZEROTOUCH_DIR = os.path.join(ROOT, "ZeroTouch")
+    ZEROTOUCH_DIR = os.path.join(ROOT, "VideoSetting", "ZeroTouch")
     STT_DIR       = os.path.join(ROOT, "VoiceSetting", "zerotouch_voicerecognition")
 
 sys.path.insert(0, V3_DIR)

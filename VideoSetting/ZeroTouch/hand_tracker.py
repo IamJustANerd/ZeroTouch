@@ -19,7 +19,11 @@ def get_asset_path(relative_path):
     except Exception:
         base_path = os.path.abspath(".")
 
-    return os.path.join(base_path, relative_path)
+    path = os.path.join(base_path, relative_path)
+    if not os.path.exists(path):
+        # Fallback to the directory of this script
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), relative_path)
+    return path
 
 # PERFORMANCE TWEAKS:
 pyautogui.PAUSE = 0 
